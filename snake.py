@@ -1,3 +1,10 @@
+import numpy as np
+import pybullet as p
+
+
+FRICTION_VALUES = [1, 0.1, 0.01]
+PI = math.pi
+
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
 	def __init__(self,
@@ -73,6 +80,48 @@ class Snake(object):
 
 	def getObservationLowerBound(self):
 		return -self.getObservationUpperBound
+
+
+	def getPosition(self):
+		position = np.array([0.0]*self.motorList)
+		for i in range(self.motorList):
+			position[i],_,_,_ = self._pybulletClient.getJointState(self.snake, i)
+		return position
+
+	def getvelocity(self):
+		velocity = np.array([0.0]*self.motorList)
+		for i in range(self.motorList):
+			_,velocity[i],_,_,= self._pybulletClient.getJointState(self.snake, i)
+		return velocity
+
+	def getTorque(self):
+		torque = np.array([0.0]*self.motorList)
+		for i in range(self.motorList):
+			_,torque[i],_,_,= self._pybulletClient.getJointState(self.snake, i)
+		return torque
+
+	def getObservation(self):
+		observation = np.array([0.0]*self.getObservationDimensions)
+		observation[0:self.motorList] = self.getPosition
+		observation[self.motorList:2*self.motorList] = self.getvelocity
+		observation[2*self.motorList:3*self.motorList] = self.getTorque
+		observation[3*self.motorList:3*self.motorList+3] = self.getBasePosition
+		observation[3*self.motorList+3:] = self.getBaseOrientation
+		return observation
+
+	def applyActions(self, motor_commands):
+		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, controlMode = POSITION_CONTROL, motor_commands)
+
+	def convertActionToJointCommand(self,self.action):
+		pass
+
+	def setTimeSteps(self, self._timeStep):
+		self._pybulletClient(self._timeStep)
+
+
+
+
+
 
 	
 
