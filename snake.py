@@ -21,6 +21,7 @@ class Snake(object):
 		self._kd = kd
 		self._timeStep = timeStep
 		self._gaitSelection = _gaitSelection
+		self._maxForce = 
 
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.quadruped)
@@ -50,7 +51,7 @@ class Snake(object):
 												velocityGain=self._kd,
 												force=self._maxForce)
 
-	def resetPose(self,self._initState):
+	def resetPose(self, self._initState):
 		for i in range(len(self.motorList)):
 			self._pybulletClient.resetJointState(self.snake, i, self._initState[i])
 
@@ -67,7 +68,7 @@ class Snake(object):
 		return (len(self.motorList))
 
 	def getObservationDimensions(self):
-		return (len(self.motorList)+7)
+		return (len(self.motorList)*3 + 7)
 
 	def getObservationUpperBound(self):
 		upperBound = np.array([0.0]*self.getObservationDimensions)
@@ -97,7 +98,7 @@ class Snake(object):
 	def getTorque(self):
 		torque = np.array([0.0]*self.motorList)
 		for i in range(self.motorList):
-			_,torque[i],_,_,= self._pybulletClient.getJointState(self.snake, i)
+			_,_,torque[i],_,= self._pybulletClient.getJointState(self.snake, i)
 		return torque
 
 	def getObservation(self):
@@ -109,14 +110,15 @@ class Snake(object):
 		observation[3*self.motorList+3:] = self.getBaseOrientation
 		return observation
 
-	def applyActions(self, motor_commands):
+	def applyActions(self, action):
 		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, controlMode = POSITION_CONTROL, motor_commands)
 
-	def convertActionToJointCommand(self,self.action):
+	def convertActionToJointCommand(self, action):
+		# return motor_commands
 		pass
 
 	def setTimeSteps(self, self._timeStep):
-		self._pybulletClient(self._timeStep)
+		self._pybulletClient.setTimeStep(self._timeStep)
 
 
 
