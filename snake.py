@@ -7,7 +7,11 @@ FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
 timeStep = 1/240.0
 _gaitSelection = 1
-
+selfCollisionEnabled = True
+motorVelocityLimit = np.inf
+motorTorqueLimit = np.inf
+kp = 10
+kd = 0.1
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
 	def __init__(self,
@@ -17,14 +21,14 @@ class Snake(object):
 		# self.link = 
 		self._pybulletClient = pybullet_client
 		# self._urdf = urdf_root
-		# self._selfCollisionEnabled = selfCollisionEnabled
-		# self._motorVelocityLimit = motorVelocityLimit
-		# self._motorTorqueLimit = motorTorqueLimit
-		# self._kp = kp
-		# self._kd = kd
+		self._selfCollisionEnabled = selfCollisionEnabled
+		self._motorVelocityLimit = motorVelocityLimit
+		self._motorTorqueLimit = motorTorqueLimit
+		self._kp = kp
+		self._kd = kd
 		self._timeStep = timeStep
 		self._gaitSelection = _gaitSelection
-		self._maxForce = np.inf
+		# self._maxForce = np.inf
 
 		# Create functions
 		# if self._is_render:
@@ -81,11 +85,12 @@ class Snake(object):
 		return (len(self.motorList)*3 + 7)
 
 	def getObservationUpperBound(self):
-		upperBound = np.array([0.0]*self.getObservationDimensions)
-		upperBound[0:self.motorList] = np.pi
-		upperBound[self.motorList:2*self.motorList] = self._motorSpeedLimit
-		upperBound[2*self.motorList:3*self.motorList] = self._motorTorqueLimit
-		upperBound[3*self.motorList:] = 1.0;
+		upperBound = np.array([0.0]*self.getObservationDimensions())
+		print(upperBound)
+		upperBound[0:len(self.motorList)] = np.pi
+		upperBound[len(self.motorList):2*len(self.motorList)] = self._motorVelocityLimit
+		upperBound[2*len(self.motorList):3*len(self.motorList)] = self._motorTorqueLimit
+		upperBound[3*len(self.motorList):] = 1.0;
 
 		return upperBound
 
@@ -94,30 +99,36 @@ class Snake(object):
 
 
 	def getPosition(self):
-		position = np.array([0.0]*self.motorList)
-		for i in range(self.motorList):
-			position[i],_,_,_ = self._pybulletClient.getJointState(self.snake, i)
+		position = np.array([0.0]*len(self.motorList))
+		count = 0
+		for i in (self.motorList):
+			position[count],_,_,_ = self._pybulletClient.getJointState(self.snake, i)
+			count += 1
 		return position
 
-	def getvelocity(self):
-		velocity = np.array([0.0]*self.motorList)
-		for i in range(self.motorList):
-			_,velocity[i],_,_,= self._pybulletClient.getJointState(self.snake, i)
+	def getVelocity(self):
+		velocity = np.array([0.0]*len(self.motorList))
+		count = 0
+		for i in (self.motorList):
+			_,velocity[count],_,_,= self._pybulletClient.getJointState(self.snake, i)
+			count += 1
 		return velocity
 
 	def getTorque(self):
-		torque = np.array([0.0]*self.motorList)
-		for i in range(self.motorList):
-			_,_,torque[i],_,= self._pybulletClient.getJointState(self.snake, i)
+		torque = np.array([0.0]*len(self.motorList))
+		count = 0
+		for i in (self.motorList):
+			_,_,_,torque[count]= self._pybulletClient.getJointState(self.snake, i)
+			count += 1
 		return torque
 
 	def getObservation(self):
-		observation = np.array([0.0]*self.getObservationDimensions)
-		observation[0:self.motorList] = self.getPosition()
-		observation[self.motorList:2*self.motorList] = self.getvelocity()
-		observation[2*self.motorList:3*self.motorList] = self.getTorque()
-		observation[3*self.motorList:3*self.motorList+3] = self.getBasePosition()
-		observation[3*self.motorList+3:] = self.getBaseOrientation()
+		observation = np.array([0.0]*self.getObservationDimensions())
+		observation[0:len(self.motorList)] = self.getPosition()
+		observation[len(self.motorList):2*len(self.motorList)] = self.getVelocity()
+		observation[2*len(self.motorList):3*len(self.motorList)] = self.getTorque()
+		observation[3*len(self.motorList):3*len(self.motorList)+3] = self.getBasePosition()
+		observation[3*len(self.motorList)+3:] = self.getBaseOrientation()
 		return observation
 
 	def applyActions(self, action):
