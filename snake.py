@@ -13,7 +13,9 @@ motorVelocityLimit = np.inf
 motorTorqueLimit = np.inf
 kp = 10
 kd = 0.1
-
+initState = [0]*16
+initPosition = [0]*3
+initOrientation = [0,0,0,1]
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
 	def __init__(self,
@@ -54,9 +56,10 @@ class Snake(object):
 		if reloadUrdf:
 			self.snake = PUT_URDF_ADDRESS_HERE
 		self.buildMotorList()
-		self.resetPose()
 		self.resetPositionOrientation()
-		self.resetBaseVelocity()
+		self.resetPose()
+		
+		# self.resetBaseVelocity()
 		return True
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
@@ -70,10 +73,16 @@ class Snake(object):
 		self._pybulletClient.stepSimulation()
 
 	def resetPose(self):
-		for i in range(len(self.motorList)):
-			self._pybulletClient.resetJointState(self.snake, i, self._initState[i])
+		count = 0
+		for i in (self.motorList):
+			self._pybulletClient.resetJointState(self.snake, i, initState[count])
+			count += 1
+		# print(initState)
 
+	def resetPositionOrientation(self):
+		self._pybulletClient.resetBasePositionAndOrientation(self.snake, initPosition, initOrientation)
 
+		pass
 	def getBaseOrientation(self):
 		_,orientation = self._pybulletClient.getBasePositionAndOrientation(self.snake)
 		return orientation
@@ -152,4 +161,5 @@ class Snake(object):
 		self.applyActions(action)
 		self._pybulletClient.stepSimulation()
 		time.sleep(self._timeStep)
+		return True
 		pass
