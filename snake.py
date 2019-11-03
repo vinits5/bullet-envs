@@ -1,12 +1,13 @@
 import numpy as np
 import pybullet as p
+import pybullet_data
 import time
 import math
 
 FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
 gravity = -9.8
-timeStep = 1/240.0
+timeStep = 1/100.0
 _gaitSelection = 1
 selfCollisionEnabled = True
 motorVelocityLimit = np.inf
@@ -16,16 +17,16 @@ kd = 0.1
 initState = [0]*16
 initPosition = [0]*3
 initOrientation = [0,0,0,1]
+
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
-	def __init__(self,
-				 pybullet_client):
+	def __init__(self, pybullet_client, urdf_root):
 
 		self.numMotors = 16
 		# self.link = 
 		self._pybulletClient = pybullet_client
-		
-		# self._urdf = urdf_root
+
+		self._urdf = urdf_root
 		self._selfCollisionEnabled = selfCollisionEnabled
 		self._motorVelocityLimit = motorVelocityLimit
 		self._motorTorqueLimit = motorTorqueLimit
@@ -51,15 +52,19 @@ class Snake(object):
 		else:
 			self.motorList = np.arange(3,(numJoints+3),3).tolist()
 
-	def reset(self, reloadUrdf):
+	def reset(self, hardReset):
 		# Check for hard reset.
-		if reloadUrdf:
-			self.snake = PUT_URDF_ADDRESS_HERE
-		self.buildMotorList()
-		self.resetPositionOrientation()
-		self.resetPose()
-		
-		# self.resetBaseVelocity()
+		if hardReset:
+			self._pybulletClient.resetSimulation()
+			self._pybulletClient.setAdditionalSearchPath(pybullet_data.getDataPath())
+			self._pybulletClient.setGravity(0,0,gravity)
+			self._pybulletClient.loadURDF("plane.urdf")
+			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0)
+		else:
+			self.buildMotorList()
+			self.resetPositionOrientation()
+			self.resetPose()
+			# self.resetBaseVelocity()
 		return True
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
@@ -149,7 +154,7 @@ class Snake(object):
 		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, self._pybulletClient.POSITION_CONTROL, motorCommands)
 		
 	def convertActionToJointCommand(self, action):
-		motorCommands = [i*PI/6 for i in action]
+		motorCommands = [i*PI/2 for i in action]
 		return motorCommands
 		# pass
 
@@ -157,7 +162,6 @@ class Snake(object):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
-		# action = self.convertActionToJointCommand(action)
 		self.applyActions(action)
 		self._pybulletClient.stepSimulation()
 		time.sleep(self._timeStep)

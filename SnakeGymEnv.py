@@ -5,23 +5,24 @@ class SnakeGymEnv(gym.Env):
 	def __init__(self, robot):
 		self.robot = robot
 		self._action_bound = 1
-		self._observation = []
 
+		self.robot.reset(hardReset=True)
 		self.robot.buildMotorList()
 		self.defObservationSpace()
 		self.defActionSpace()
 
-	def reset(self, reloadURDF):
-		assert self.robot.reset(reloadURDF), "Error in reset!"
-		return self.robot.getObservation()
+	def reset(self, hardReset=False):
+		assert self.robot.reset(hardReset=hardReset), "Error in reset!"
+		self._observation = self.robot.getObservation()
+		return self._observation
 
 	def step(self, action):
 		self.checkBound(action)
 		if self.robot.step(action):
 			observation = self.robot.getObservation()
-			# reward = self.calculateReward()
+			reward = self.calculateReward(observation)
+			self._observation = observation
 			# done = self.checkTermination()
-			reward = 0
 			done = False
 		else:
 			raise SystemError("Action not executed!")
@@ -55,8 +56,9 @@ class SnakeGymEnv(gym.Env):
 				raise ValueError("Illegal action {} at idx {}".format(act, idx))
 		return True
 
-	def calculateReward(self):
-		pass
+	def calculateReward(self, observation):
+		print(observation[24], self._observation[24])
+		return observation[24] - self._observation[24]
 
 	def checkTermination(self):
 		pass
