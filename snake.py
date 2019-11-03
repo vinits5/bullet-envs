@@ -22,9 +22,14 @@ class Snake(object):
 		self._timeStep = timeStep
 		self._gaitSelection = _gaitSelection
 		self._maxForce = 
+		# Create functions
+		# if self._is_render:
+		# 	self._pybullet_client = bullet_client.BulletClient(connection_mode=pybullet.GUI)
+		# else:
+		# 	self._pybullet_client = bullet_client.BulletClient()
 
 	def buildMotorList(self):
-		numJoints = self._pybulletClient.getNumJoints(self.quadruped)
+		numJoints = self._pybulletClient.getNumJoints(self.snake)
 		numRevoluteJoints = int((numJoints-1)/3)
 		if _gaitSelection == 0:
 			self.motorList = np.arange(3,(numJoints+3),6).tolist()
@@ -34,13 +39,14 @@ class Snake(object):
 			self.motorList = np.arange(3,(numJoints+3),3).tolist()
 
 	def reset(self, reloadUrdf):
+		# Check for hard reset.
 		if reloadUrdf:
 			self.snake = PUT_URDF_ADDRESS_HERE
 		self.buildMotorList()
 		self.resetPose()
 		self.resetPositionOrientation()
 		self.resetBaseVelocity()
-
+		return True
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
 		self._pybullet_client.setJointMotorControl(bodyIndex=self.snake,
@@ -80,7 +86,7 @@ class Snake(object):
 		return upperBound
 
 	def getObservationLowerBound(self):
-		return -self.getObservationUpperBound
+		return -self.getObservationUpperBound()
 
 
 	def getPosition(self):
@@ -103,11 +109,11 @@ class Snake(object):
 
 	def getObservation(self):
 		observation = np.array([0.0]*self.getObservationDimensions)
-		observation[0:self.motorList] = self.getPosition
-		observation[self.motorList:2*self.motorList] = self.getvelocity
-		observation[2*self.motorList:3*self.motorList] = self.getTorque
-		observation[3*self.motorList:3*self.motorList+3] = self.getBasePosition
-		observation[3*self.motorList+3:] = self.getBaseOrientation
+		observation[0:self.motorList] = self.getPosition()
+		observation[self.motorList:2*self.motorList] = self.getvelocity()
+		observation[2*self.motorList:3*self.motorList] = self.getTorque()
+		observation[3*self.motorList:3*self.motorList+3] = self.getBasePosition()
+		observation[3*self.motorList+3:] = self.getBaseOrientation()
 		return observation
 
 	def applyActions(self, action):
@@ -120,12 +126,7 @@ class Snake(object):
 	def setTimeSteps(self, self._timeStep):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
-
-
-
-
-
-	
-
-
-
+	def step(self, action):
+		action = self.convertActionToJointCommand(action)
+		self.applyActions
+		pass
