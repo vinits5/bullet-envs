@@ -5,6 +5,7 @@ import math
 
 FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
+gravity = -9.8
 timeStep = 1/240.0
 _gaitSelection = 1
 selfCollisionEnabled = True
@@ -12,6 +13,7 @@ motorVelocityLimit = np.inf
 motorTorqueLimit = np.inf
 kp = 10
 kd = 0.1
+
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
 	def __init__(self,
@@ -20,6 +22,7 @@ class Snake(object):
 		self.numMotors = 16
 		# self.link = 
 		self._pybulletClient = pybullet_client
+		
 		# self._urdf = urdf_root
 		self._selfCollisionEnabled = selfCollisionEnabled
 		self._motorVelocityLimit = motorVelocityLimit
@@ -57,13 +60,14 @@ class Snake(object):
 		return True
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
-		self._pybullet_client.setJointMotorControl(bodyIndex=self.snake,
-												jointIndex=motor_id,
-												controlMode=self._pybullet_client.POSITION_CONTROL,
-												targetPosition=desired_angle,
+		self._pybulletClient.setJointMotorControl2(bodyIndex=self.snake,
+												jointIndex=motorId,
+												controlMode=self._pybulletClient.POSITION_CONTROL,
+												targetPosition=desiredAngle,
 												positionGain=self._kp,
 												velocityGain=self._kd,
-												force=self._maxForce)
+												)
+		self._pybulletClient.stepSimulation()
 
 	def resetPose(self):
 		for i in range(len(self.motorList)):
@@ -86,7 +90,7 @@ class Snake(object):
 
 	def getObservationUpperBound(self):
 		upperBound = np.array([0.0]*self.getObservationDimensions())
-		print(upperBound)
+		
 		upperBound[0:len(self.motorList)] = np.pi
 		upperBound[len(self.motorList):2*len(self.motorList)] = self._motorVelocityLimit
 		upperBound[2*len(self.motorList):3*len(self.motorList)] = self._motorTorqueLimit
@@ -132,18 +136,20 @@ class Snake(object):
 		return observation
 
 	def applyActions(self, action):
-		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, POSITION_CONTROL, motor_commands)
-
+		motorCommands = self.convertActionToJointCommand(action)
+		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, self._pybulletClient.POSITION_CONTROL, motorCommands)
+		
 	def convertActionToJointCommand(self, action):
-		# return motor_commands
-		pass
+		motorCommands = [i*PI/6 for i in action]
+		return motorCommands
+		# pass
 
 	def setTimeSteps(self):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
-		action = self.convertActionToJointCommand(action)
-		self.applyActions
+		# action = self.convertActionToJointCommand(action)
+		self.applyActions(action)
 		self._pybulletClient.stepSimulation()
 		time.sleep(self._timeStep)
 		pass
