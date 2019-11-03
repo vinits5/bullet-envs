@@ -1,9 +1,12 @@
 import numpy as np
 import pybullet as p
-
+import time
+import math
 
 FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
+timeStep = 1/240.0
+_gaitSelection = 1
 
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
@@ -11,17 +14,18 @@ class Snake(object):
 				 pybullet_client):
 
 		self.numMotors = 16
-		self.link = 
+		# self.link = 
 		self._pybulletClient = pybullet_client
-		self._urdf = urdf_root
-		self._selfCollisionEnabled = selfCollisionEnabled
-		self._motorVelocityLimit = motorVelocityLimit
-		self._motorTorqueLimit = motorTorqueLimit
-		self._kp = kp
-		self._kd = kd
+		# self._urdf = urdf_root
+		# self._selfCollisionEnabled = selfCollisionEnabled
+		# self._motorVelocityLimit = motorVelocityLimit
+		# self._motorTorqueLimit = motorTorqueLimit
+		# self._kp = kp
+		# self._kd = kd
 		self._timeStep = timeStep
 		self._gaitSelection = _gaitSelection
-		self._maxForce = 
+		self._maxForce = np.inf
+
 		# Create functions
 		# if self._is_render:
 		# 	self._pybullet_client = bullet_client.BulletClient(connection_mode=pybullet.GUI)
@@ -57,7 +61,7 @@ class Snake(object):
 												velocityGain=self._kd,
 												force=self._maxForce)
 
-	def resetPose(self, self._initState):
+	def resetPose(self):
 		for i in range(len(self.motorList)):
 			self._pybulletClient.resetJointState(self.snake, i, self._initState[i])
 
@@ -117,16 +121,18 @@ class Snake(object):
 		return observation
 
 	def applyActions(self, action):
-		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, controlMode = POSITION_CONTROL, motor_commands)
+		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, POSITION_CONTROL, motor_commands)
 
 	def convertActionToJointCommand(self, action):
 		# return motor_commands
 		pass
 
-	def setTimeSteps(self, self._timeStep):
+	def setTimeSteps(self):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
 		action = self.convertActionToJointCommand(action)
 		self.applyActions
+		self._pybulletClient.stepSimulation()
+		time.sleep(self._timeStep)
 		pass
