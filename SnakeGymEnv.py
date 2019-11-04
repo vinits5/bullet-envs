@@ -5,6 +5,7 @@ class SnakeGymEnv(gym.Env):
 	def __init__(self, robot):
 		self.robot = robot
 		self._action_bound = 1
+		self.mode = "rgb_array"
 
 		self.robot.reset(hardReset=True)
 		self.robot.buildMotorList()
@@ -29,7 +30,9 @@ class SnakeGymEnv(gym.Env):
 		return observation, reward, done, {}
 
 	def render(self):
-		pass
+		if self.mode != "rgb_array":
+			return np.array([])
+		return self.robot.render()
 
 	def defObservationSpace(self):
 		# Define observation of SnakeGym environment.

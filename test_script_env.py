@@ -17,6 +17,7 @@ for i in range(60):
 	obs, r, _, _ = env.step([1]*8)
 	R += r
 	print(obs)
+	env.render()
 	print('Reward: {}'.format(r))
 
 print("Total Reward: {}".format(R))

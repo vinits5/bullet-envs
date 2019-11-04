@@ -4,6 +4,7 @@ import pybullet_data
 import time
 import math
 
+# Settings for the dynamics
 FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
 gravity = -9.8
@@ -17,6 +18,18 @@ kd = 0.1
 initState = [0]*16
 initPosition = [0]*3
 initOrientation = [0,0,0,1]
+
+# Render Settings
+_cam_dist = 1.0
+_cam_yaw = 0
+_cam_pitch = -30
+_cam_roll = 0
+upAxisIndex = 2
+RENDER_HEIGHT = 720
+RENDER_WIDTH = 960
+fov = 60
+nearVal = 0.1
+farVal = 100
 
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
@@ -34,6 +47,15 @@ class Snake(object):
 		self._kd = kd
 		self._timeStep = timeStep
 		self._gaitSelection = _gaitSelection
+
+		self._cam_dist = _cam_dist
+		self._cam_yaw = _cam_yaw
+		self._cam_pitch = _cam_pitch
+		self._cam_roll = _cam_roll
+		self.upAxisIndex = upAxisIndex
+		self.fov = fov
+		self.nearVal = nearVal
+		self.farVal = farVal
 		# self._maxForce = np.inf
 
 		# Create functions
@@ -166,4 +188,25 @@ class Snake(object):
 		self._pybulletClient.stepSimulation()
 		time.sleep(self._timeStep)
 		return True
-		pass
+	
+	def render(self):
+		base_pos = self.getBasePosition()
+		view_matrix = self._pybulletClient.computeViewMatrixFromYawPitchRoll(
+			cameraTargetPosition=base_pos,
+			distance=self._cam_dist,
+			yaw=self._cam_yaw,
+			pitch=self._cam_pitch,
+			roll=self._cam_roll,
+			upAxisIndex=self.upAxisIndex)
+		proj_matrix = self._pybulletClient.computeProjectionMatrixFOV(fov=self.fov,
+																	   aspect=float(RENDER_WIDTH)/RENDER_HEIGHT,
+																	   nearVal=self.nearVal,
+																	   farVal=self.nearVal)
+		(_, _, px, _, _) = self._pybulletClient.getCameraImage(width=RENDER_WIDTH,
+												   height=RENDER_HEIGHT)
+												   # viewMatrix=view_matrix,
+												   # projectionMatrix=proj_matrix)
+												   # renderer=self._pybulletClient.ER_BULLET_HARDWARE_OPENGL)
+		rgb_array = np.array(px)
+		rgb_array = rgb_array[:, :, :3]
+		return rgb_array
