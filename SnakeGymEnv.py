@@ -22,9 +22,8 @@ class SnakeGymEnv(gym.Env):
 		if self.robot.step(action):
 			observation = self.robot.getObservation()
 			reward = self.calculateReward(observation)
+			done = self.checkTermination(observation)
 			self._observation = observation
-			# done = self.checkTermination()
-			done = False
 		else:
 			raise SystemError("Action not executed!")
 		return observation, reward, done, {}
@@ -60,8 +59,10 @@ class SnakeGymEnv(gym.Env):
 		return True
 
 	def calculateReward(self, observation):
-		print(observation[24], self._observation[24])
-		return observation[24] - self._observation[24]
+		reward_xMotion = observation[24] - self._observation[24]
+		total_reward = reward_xMotion
+		return total_reward
 
-	def checkTermination(self):
-		pass
+	def checkTermination(self, observation):
+		if abs(observation[25]) > 0.5: return True
+		else: return False

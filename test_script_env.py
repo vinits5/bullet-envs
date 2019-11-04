@@ -14,9 +14,9 @@ print(obs)
 
 R = 0.0
 for i in range(60):
-	obs, r, _, _ = env.step([1]*8)
+	obs, r, d, _ = env.step([1]*8)
 	R += r
-	print(obs)
+	print(d)
 	env.render()
 	print('Reward: {}'.format(r))
 
