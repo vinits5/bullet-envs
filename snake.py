@@ -156,10 +156,8 @@ class Snake(object):
 
 	def getTorque(self):
 		torque = np.array([0.0]*len(self.motorList))
-		count = 0
-		for i in (self.motorList):
-			_,_,_,torque[count]= self._pybulletClient.getJointState(self.snake, i)
-			count += 1
+		for idx, motorNo in enumerate(self.motorList):
+			_,_,_,torque[idx]= self._pybulletClient.getJointState(self.snake, motorNo)
 		return torque
 
 	def getObservation(self):
