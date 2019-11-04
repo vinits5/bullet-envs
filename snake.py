@@ -9,7 +9,7 @@ FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
 gravity = -9.8
 timeStep = 1/100.0
-_gaitSelection = 1
+_gaitSelection = 0
 selfCollisionEnabled = True
 motorVelocityLimit = np.inf
 motorTorqueLimit = np.inf
@@ -18,7 +18,7 @@ kd = 0.1
 initState = [0]*16
 initPosition = [0]*3
 initOrientation = [0,0,0,1]
-
+SCALING_FACTOR = PI
 # Render Settings
 _cam_dist = 1.0
 _cam_yaw = 0
@@ -56,6 +56,7 @@ class Snake(object):
 		self.fov = fov
 		self.nearVal = nearVal
 		self.farVal = farVal
+		self.counter = 0
 		# self._maxForce = np.inf
 
 		# Create functions
@@ -66,13 +67,8 @@ class Snake(object):
 
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.snake)
-		numRevoluteJoints = int((numJoints-1)/3)
-		if _gaitSelection == 0:
-			self.motorList = np.arange(3,(numJoints+3),6).tolist()
-		elif _gaitSelection == 1:
-			self.motorList = np.arange(6,(numJoints+3),6).tolist()
-		else:
-			self.motorList = np.arange(3,(numJoints+3),3).tolist()
+		self.motorList = np.arange(3,(numJoints),3).tolist()
+		print("Moror List", self.motorList)
 
 	def reset(self, hardReset):
 		# Check for hard reset.
@@ -174,17 +170,57 @@ class Snake(object):
 		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, self._pybulletClient.POSITION_CONTROL, motorCommands)
 		
 	def convertActionToJointCommand(self, action):
-		motorCommands = [i*PI/2 for i in action]
+		motorCommands = [i*SCALING_FACTOR for i in action]
 		return motorCommands
 		# pass
+
+	def checkFeedback(self, action, observation):
+		actionFeedback =[(action[i]*SCALING_FACTOR - observation[i])for i in range(len(self.motorList))]
+		actionFeedback = np.asarray(actionFeedback)
+		actionNorm = np.sqrt(actionFeedback.dot(actionFeedback))
+		if actionNorm>0.005:
+			return True
+		else:
+			return False
+
+	def createAction(self,action):
+		# numJoints = self._pybulletClient.getNumJoints(self.snake)
+		action_ = [0]*16
+		count = 0
+		if _gaitSelection == 0:
+			for i in range(0,self.numMotors,2):
+				
+				action_[i] = action[count]
+				count +=1
+				
+		elif _gaitSelection == 1:
+			for i in range(1,self.numMotors,2):
+				
+				action_[i] = action[count]
+				count +=1
+		else:
+			for i in range(0,self.numMotors,1):
+				
+				action_[i] = action[count]
+				count +=1
+		
+		# print("Moror List", action_)
+		return action_
 
 	def setTimeSteps(self):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
-		self.applyActions(action)
-		self._pybulletClient.stepSimulation()
-		time.sleep(self._timeStep)
+		action = self.createAction(action)
+		self.counter = 0
+		observation = self.getObservation()
+		while self.checkFeedback(action,observation):
+			self.applyActions(action)
+			self._pybulletClient.stepSimulation()
+			observation = self.getObservation()
+			actionNorm = self.checkFeedback(action, observation)
+			time.sleep(self._timeStep)
+			self.counter += 1
 		return True
 	
 	def render(self):
@@ -208,3 +244,6 @@ class Snake(object):
 		rgb_array = np.array(px)
 		rgb_array = rgb_array[:, :, :3]
 		return rgb_array
+
+	
+		

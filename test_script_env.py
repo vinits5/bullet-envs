@@ -14,11 +14,11 @@ print(obs)
 
 R = 0.0
 for i in range(60):
-	obs, r, d, _ = env.step([1]*8)
+	obs, r, d, _ = env.step([0.5]*8)
 	R += r
 	print(d)
-	env.render()
+	# env.render()
 	print('Reward: {}'.format(r))
-
+	print("ith step ", i)
 print("Total Reward: {}".format(R))
 time.sleep(5)
