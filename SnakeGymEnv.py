@@ -62,10 +62,10 @@ class SnakeGymEnv(gym.Env):
 		return True
 
 	def calculateReward(self, observation):
-		reward_xMotion = observation[24] - self._observation[24]
+		reward_xMotion = observation[48] - self._observation[48]
 		total_reward = reward_xMotion
 		return total_reward
 
 	def checkTermination(self, observation):
-		if abs(observation[25]) > 0.5: return True
+		if abs(observation[49]) > 0.5: return True
 		else: return False
