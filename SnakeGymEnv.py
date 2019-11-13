@@ -3,6 +3,7 @@ import numpy as np
 
 class SnakeGymEnv(gym.Env):
 	def __init__(self, robot):
+		print("Snake Gym environment Created!")
 		self.robot = robot
 		self._action_bound = 1
 		self.mode = "rgb_array"
@@ -47,7 +48,7 @@ class SnakeGymEnv(gym.Env):
 	def defActionSpace(self):
 		# Define actions for SnakeGym environment.
 			# joint positions						(n x 1)
-		action_dim = self.robot.numMotors
+		action_dim = int(self.robot.numMotors/2)
 		action_high = np.array([self._action_bound] * action_dim)
 		self.action_space = gym.spaces.Box(-action_high, action_high)
 
@@ -55,7 +56,9 @@ class SnakeGymEnv(gym.Env):
 	def checkBound(self, action):
 		for idx, act in enumerate(action):
 			if act<-1 or act>1:
-				raise ValueError("Illegal action {} at idx {}".format(act, idx))
+				# raise ValueError("Illegal action {} at idx {}".format(act, idx))
+				print('Clipped')
+				action[idx] = np.clip(act, -1, 1)
 		return True
 
 	def calculateReward(self, observation):

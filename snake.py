@@ -21,9 +21,9 @@ initOrientation = [0,0,0,1]
 SCALING_FACTOR = PI/2
 
 # Render Settings
-_cam_dist = 1.0
-_cam_yaw = 0
-_cam_pitch = -30
+_cam_dist = 5.0
+_cam_yaw = 50
+_cam_pitch = -35
 _cam_roll = 0
 upAxisIndex = 2
 RENDER_HEIGHT = 720
@@ -179,7 +179,7 @@ class Snake(object):
 		actionFeedback =[(action[i]*SCALING_FACTOR - observation[i])for i in range(len(self.motorList))]
 		actionFeedback = np.asarray(actionFeedback)
 		actionNorm = np.sqrt(actionFeedback.dot(actionFeedback))
-		if actionNorm>0.02:
+		if actionNorm>0.05:
 			return True
 		else:
 			return False
@@ -238,14 +238,16 @@ class Snake(object):
 																	   aspect=float(RENDER_WIDTH)/RENDER_HEIGHT,
 																	   nearVal=self.nearVal,
 																	   farVal=self.nearVal)
+
+		cdist = 2
+		cyaw = -30
+		cpitch = -90
+		p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=base_pos)
 		(_, _, px, _, _) = self._pybulletClient.getCameraImage(width=RENDER_WIDTH,
-												   height=RENDER_HEIGHT)
-												   # viewMatrix=view_matrix,
-												   # projectionMatrix=proj_matrix)
+												   height=RENDER_HEIGHT,
+												   viewMatrix=view_matrix,
+												   projectionMatrix=proj_matrix)
 												   # renderer=self._pybulletClient.ER_BULLET_HARDWARE_OPENGL)
 		rgb_array = np.array(px)
 		rgb_array = rgb_array[:, :, :3]
 		return rgb_array
-
-	
-		
