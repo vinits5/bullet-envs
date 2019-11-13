@@ -9,7 +9,7 @@ FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
 gravity = -9.8
 timeStep = 1/100.0
-_gaitSelection = 0
+_gaitSelection = 1
 selfCollisionEnabled = True
 motorVelocityLimit = np.inf
 motorTorqueLimit = np.inf
@@ -18,7 +18,8 @@ kd = 0.1
 initState = [0]*16
 initPosition = [0]*3
 initOrientation = [0,0,0,1]
-SCALING_FACTOR = PI
+SCALING_FACTOR = PI/2
+
 # Render Settings
 _cam_dist = 1.0
 _cam_yaw = 0
@@ -68,7 +69,7 @@ class Snake(object):
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.snake)
 		self.motorList = np.arange(3,(numJoints),3).tolist()
-		print("Moror List", self.motorList)
+		# print("Moror List", self.motorList)
 
 	def reset(self, hardReset):
 		# Check for hard reset.
@@ -178,7 +179,7 @@ class Snake(object):
 		actionFeedback =[(action[i]*SCALING_FACTOR - observation[i])for i in range(len(self.motorList))]
 		actionFeedback = np.asarray(actionFeedback)
 		actionNorm = np.sqrt(actionFeedback.dot(actionFeedback))
-		if actionNorm>0.005:
+		if actionNorm>0.02:
 			return True
 		else:
 			return False
@@ -204,7 +205,7 @@ class Snake(object):
 				action_[i] = action[count]
 				count +=1
 		
-		# print("Moror List", action_)
+		# print("Motor List", action_)
 		return action_
 
 	def setTimeSteps(self):
@@ -221,6 +222,7 @@ class Snake(object):
 			actionNorm = self.checkFeedback(action, observation)
 			time.sleep(self._timeStep)
 			self.counter += 1
+		# print(self.counter)
 		return True
 	
 	def render(self):
