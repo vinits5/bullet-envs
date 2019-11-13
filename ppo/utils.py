@@ -8,6 +8,38 @@ sys.path.append(os.path.join(BASE_DIR, os.pardir))
 from SnakeGymEnv import SnakeGymEnv
 import snake
 
+
+class IOStream:
+	def __init__(self, path):
+		self.f = open(path, 'w')
+
+	def log_params(self, device, num_envs, lr, threshold_reward):
+		self.log('Device: {}'.format(device))
+		self.log('Number of Environments used: {}'.format(num_envs))
+		self.log('Learning Rate: {}'.format(lr))
+		self.log('Threshold Reward: {}'.format(threshold_reward))
+
+	def log(self, text):
+		self.f.write(text + '\n')
+		self.f.flush()
+
+	def close(self):
+		self.f.close()
+
+
+def logFiles(log_dir):
+	code_dir = os.path.join(log_dir, 'code')
+	if not os.path.exists(code_dir): os.mkdir(code_dir)
+	os.system('cp model.py %s' % (code_dir))
+	os.system('cp agent.py %s' % (code_dir))
+	os.system('cp utils.py %s'%(code_dir))
+	os.system('cp train.py %s'%(code_dir))
+	os.system('cp test.py %s'%(code_dir))
+	robot_file = os.path.join(os.pardir, 'snake.py')
+	os.system('cp %s %s'%(robot_file, code_dir))
+	gym_file = os.path.join(os.pardir, 'SnakeGymEnv.py')
+	os.system('cp %s %s'%(gym_file, code_dir))
+
 ###################### Print Operations #########################
 def print_(text="Test", color='w', style='no', bg_color=''):
 	color_dict = {'b': 30, 'r': 31, 'g': 32, 'y': 33, 'bl': 34, 'p': 35, 'c': 36, 'w': 37}
@@ -42,7 +74,7 @@ def test_env(env, model, idx, vis=False):
 	total_reward = 0
 	steps = 0
 	# print('In env')
-	print('Test No: ', idx)
+	print('Test No: {}\r'.format(idx), end="")
 	while not done and steps < 10:
 		# print('Test in steps')
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
@@ -54,3 +86,4 @@ def test_env(env, model, idx, vis=False):
 		steps += 1
 		# print('End of step')
 	return total_reward
+

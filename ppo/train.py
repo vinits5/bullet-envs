@@ -39,7 +39,7 @@ def train():
 	threshold_reward = 200
 	max_frames 		 = 15000
 	frame_idx  		 = 0
-	test_rewards 	 = []
+	# test_rewards 	 = []
 	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
 	num_envs 		 = 2
 	test_epochs		 = 10
@@ -51,8 +51,14 @@ def train():
 	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
 
+
 	p.connect(p.DIRECT)
 	writer = SummaryWriter(log_dir)
+
+	# Create training log.
+	textio = utils.IOStream(os.path.join(log_dir, 'train.log'))
+	textio.log_params(device, num_envs, lr, threshold_reward)	
+	utils.logFiles(log_dir)
 
 	# create multiple environments.
 	envs = [utils.make_env(p, urdf_path) for i in range(num_envs)]
@@ -83,8 +89,10 @@ def train():
 	env = SnakeGymEnv(robot)
 
 	print_('\nTraining Begins ...', color='r', style='bold')
+	textio.log('Training Begins ...')
 	while frame_idx < max_frames and not early_stop:
 		print_('\nTraining Policy!', color='r', style='bold')
+		textio.log('\n############## Epoch: %0.5d ##############'%(int(frame_idx/20)))
 
 		# Memory buffers
 		log_probs = []
@@ -97,7 +105,7 @@ def train():
 		total_reward = 0.0
 
 		for i in range(num_steps):
-			print('Steps taken: {} & Epoch: {}'.format(i, int(frame_idx/20)))
+			print('Steps taken: {} & Epoch: {}\r'.format(i, int(frame_idx/20)), end="")
 			state = torch.FloatTensor(state).to(device)
 
 			# Find action using policy.
@@ -108,6 +116,7 @@ def train():
 			# Take actions and find MDP.
 			next_state, reward, done, _ = envs.step(action.cpu().numpy())
 			total_reward += sum(reward)
+			textio.log('Steps: {} and Reward: {}'.format(int(frame_idx%20), total_reward))
 
 			# Calculate log(policy)
 			log_prob = dist.log_prob(action)
@@ -127,14 +136,15 @@ def train():
 
 			# Test Trained Policy.
 			if frame_idx % 10 == 0:
-				print_('\nEvaluate Policy!', color='bl', style='bold')
+				print_('\n\nEvaluate Policy!', color='bl', style='bold')
 				test_reward = np.mean([utils.test_env(env, net, test_idx) for test_idx in range(test_epochs)])
 
-				test_rewards.append(test_reward)
+				# test_rewards.append(test_reward)
 				# utils.plot(frame_idx, test_rewards)	# not required due to tensorboardX.
 				writer.add_scalar('test_reward', test_reward, frame_idx)
 				
-				print_('Test Reward: {}\n'.format(test_reward), color='bl', style='bold')
+				print_('\nTest Reward: {}\n'.format(test_reward), color='bl', style='bold')
+				textio.log('Test Reward: {}'.format(test_reward))
 
 				# Save various factors of training.
 				snap = {'frame_idx': frame_idx,
@@ -146,6 +156,9 @@ def train():
 					save_checkpoint(snap, os.path.join(log_dir, 'weights_bestPolicy.pth'))
 					best_test_reward = test_reward
 				save_checkpoint(snap, os.path.join(log_dir,'weights.pth'))
+				if frame_idx % 10 == 0:
+					if not os.path.exists(os.path.join(log_dir, 'models')): os.mkdir(os.path.join(log_dir, 'models'))
+					save_checkpoint(snap, os.path.join(log_dir, 'models', 'weights_%0.5d.pth'%frame_idx))
 
 				if test_reward > threshold_reward: early_stop = True
 				
@@ -163,6 +176,7 @@ def train():
 		advantage = returns - values
 		
 		writer.add_scalar('reward/episode', total_reward, frame_idx)
+		textio.log('Total Training Reward: {}'.format(total_reward))
 
 		# Update the Policy.
 		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage)
