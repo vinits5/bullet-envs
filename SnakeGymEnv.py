@@ -57,7 +57,7 @@ class SnakeGymEnv(gym.Env):
 		for idx, act in enumerate(action):
 			if act<-1 or act>1:
 				# raise ValueError("Illegal action {} at idx {}".format(act, idx))
-				print('Clipped')
+				# print('Clipped')
 				action[idx] = np.clip(act, -1, 1)
 		return True
 

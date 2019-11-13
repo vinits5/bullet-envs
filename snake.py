@@ -78,7 +78,7 @@ class Snake(object):
 			self._pybulletClient.setAdditionalSearchPath(pybullet_data.getDataPath())
 			self._pybulletClient.setGravity(0,0,gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
-			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0)
+			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0, flags=self._pybulletClient.URDF_USE_SELF_COLLISION)
 		else:
 			self.buildMotorList()
 			self.resetPositionOrientation()
@@ -222,6 +222,8 @@ class Snake(object):
 			actionNorm = self.checkFeedback(action, observation)
 			time.sleep(self._timeStep)
 			self.counter += 1
+			if self.counter > 40:	# To avoid extra steps and collision.
+				break
 		# print(self.counter)
 		return True
 	

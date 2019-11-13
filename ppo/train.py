@@ -25,6 +25,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
 from SnakeGymEnv import SnakeGymEnv
 import snake
+from datetime import datetime
 
 def save_checkpoint(state, filename):
 	torch.save(state, '{}'.format(filename))
@@ -43,9 +44,12 @@ def train():
 	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
 	num_envs 		 = 2
 	test_epochs		 = 10
-	log_dir 		 = 'log'
 	resume_training	 = ''
 	best_test_reward = 0.0
+	log_dir 		 = 'log'
+
+	now = datetime.now()
+	log_dir = log_dir + '_' + now.strftime('%d_%m_%Y_%H_%M_%S')
 
 	# Check cuda availability.
 	use_cuda = torch.cuda.is_available()
@@ -156,7 +160,7 @@ def train():
 					save_checkpoint(snap, os.path.join(log_dir, 'weights_bestPolicy.pth'))
 					best_test_reward = test_reward
 				save_checkpoint(snap, os.path.join(log_dir,'weights.pth'))
-				if frame_idx % 10 == 0:
+				if frame_idx % 1000 == 0:
 					if not os.path.exists(os.path.join(log_dir, 'models')): os.mkdir(os.path.join(log_dir, 'models'))
 					save_checkpoint(snap, os.path.join(log_dir, 'models', 'weights_%0.5d.pth'%frame_idx))
 
