@@ -63,7 +63,8 @@ class SnakeGymEnv(gym.Env):
 
 	def calculateReward(self, observation):
 		reward_xMotion = observation[48] - self._observation[48]
-		total_reward = reward_xMotion
+		reward_yMotion = abs(observation[49] - self._observation[49])
+		total_reward = reward_xMotion - reward_yMotion
 		return total_reward
 
 	def checkTermination(self, observation):
