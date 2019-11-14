@@ -27,7 +27,8 @@ def ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantage):
 		rand_ids = np.random.randint(0, batch_size, mini_batch_size)
 		yield states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
 
-def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantages, clip_param=0.2):
+def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantages, writer, frame_idx, clip_param=0.2):
+	total_loss = 0.0
 	for _ in range(ppo_epochs):
 		for state, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantages):
 			dist, value = model(state)
@@ -42,7 +43,11 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, l
 			critic_loss = (return_ - value).pow(2).mean()
 
 			loss = 0.5 * critic_loss + actor_loss - 0.001 * entropy
+			total_loss += loss.item()
 
 			optimizer.zero_grad()
 			loss.backward()
 			optimizer.step()
+	total_loss = total_loss/(ppo_epochs*1.0)
+	total_loss = total_loss/(states.size(0)/mini_batch_size)
+	writer.add_scalar('loss/epoch', total_loss, frame_idx)

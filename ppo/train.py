@@ -115,7 +115,7 @@ def train():
 			# Find action using policy.
 			dist, value = net(state)
 			action = dist.sample()
-			action = action*0.1 #HACK
+			action = action #HACK
 
 			# Take actions and find MDP.
 			next_state, reward, done, _ = envs.step(action.cpu().numpy())
@@ -183,7 +183,7 @@ def train():
 		textio.log('Total Training Reward: {}'.format(total_reward))
 
 		# Update the Policy.
-		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage)
+		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage, writer, frame_idx)
 
 
 if __name__ == '__main__':

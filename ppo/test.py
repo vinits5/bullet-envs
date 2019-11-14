@@ -30,7 +30,7 @@ urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
 hidden_size = 256
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
-log_dir = 'log'
+log_dir = 'log_13_11_2019_18_03_56'
 
 # Create test environment.
 p.connect(p.GUI)
@@ -57,10 +57,10 @@ done = False
 total_reward = 0
 steps = 0
 print_('Test Started...', color='r', style='bold')
-while not done and steps < 100:
+while steps < 100:
 	state = torch.FloatTensor(state).unsqueeze(0).to(device)
 	dist, _ = net(state)
-	next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0]*0.1)
+	next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0]) #Hack
 	print("Step No: {:3d}, Reward: {:2.3f} and done: {}".format(steps, reward, done))
 	state = next_state
 	total_reward += reward

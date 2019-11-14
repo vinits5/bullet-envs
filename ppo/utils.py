@@ -79,7 +79,7 @@ def test_env(env, model, idx, vis=False):
 		# print('Test in steps')
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
 		dist, _ = model(state)
-		next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0]*0.1)
+		next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0]) #Hack
 		state = next_state
 		if vis: env.render()
 		total_reward += reward

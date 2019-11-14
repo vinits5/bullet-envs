@@ -36,6 +36,7 @@ class ActorCritic(nn.Module):
     def forward(self, x):
         value = self.critic(x)
         mu    = self.actor(x)
+        mu    = torch.tanh(mu)
         std   = self.log_std.exp().expand_as(mu)
         dist  = Normal(mu, std)
         return dist, value
