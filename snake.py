@@ -18,7 +18,7 @@ kd = 0.1
 initState = [0]*16
 initPosition = [0]*3
 initOrientation = [0,0,0,1]
-SCALING_FACTOR = PI/2
+SCALING_FACTOR = PI/6
 
 # Render Settings
 _cam_dist = 5.0
@@ -79,12 +79,18 @@ class Snake(object):
 			self._pybulletClient.setGravity(0,0,gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0, flags=self._pybulletClient.URDF_USE_SELF_COLLISION)
+			self.setDynamics()
 		else:
 			self.buildMotorList()
 			self.resetPositionOrientation()
 			self.resetPose()
 			# self.resetBaseVelocity()
 		return True
+
+	def setDynamics(self):
+		self._pybulletClient.changeDynamics(self.snake, -1, lateralFriction=2, anisotropicFriction=FRICTION_VALUES)
+		for i in range(self._pybulletClient.getNumJoints(self.snake)):
+			self._pybulletClient.changeDynamics(self.snake, i, lateralFriction=2, anisotropicFriction=FRICTION_VALUES)
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
 		self._pybulletClient.setJointMotorControl2(bodyIndex=self.snake,
