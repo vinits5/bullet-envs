@@ -42,8 +42,8 @@ def train():
 	frame_idx  		 = 0
 	# test_rewards 	 = []
 	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
-	num_envs 		 = 1
-	test_epochs		 = 10
+	num_envs 		 = 16
+	test_epochs		 = 2
 	resume_training	 = ''
 	best_test_reward = 0.0
 	log_dir 		 = 'log'
@@ -139,7 +139,7 @@ def train():
 			frame_idx += 1
 
 			# Test Trained Policy.
-			if frame_idx % 10 == 0:
+			if frame_idx % 40 == 0:
 				print_('\n\nEvaluate Policy!', color='bl', style='bold')
 				test_reward = np.mean([utils.test_env(env, net, test_idx) for test_idx in range(test_epochs)])
 
@@ -160,11 +160,11 @@ def train():
 					save_checkpoint(snap, os.path.join(log_dir, 'weights_bestPolicy.pth'))
 					best_test_reward = test_reward
 				save_checkpoint(snap, os.path.join(log_dir,'weights.pth'))
-				if frame_idx % 1000 == 0:
-					if not os.path.exists(os.path.join(log_dir, 'models')): os.mkdir(os.path.join(log_dir, 'models'))
-					save_checkpoint(snap, os.path.join(log_dir, 'models', 'weights_%0.5d.pth'%frame_idx))
-
 				if test_reward > threshold_reward: early_stop = True
+			if frame_idx % 1000 == 0:
+				if not os.path.exists(os.path.join(log_dir, 'models')): os.mkdir(os.path.join(log_dir, 'models'))
+				save_checkpoint(snap, os.path.join(log_dir, 'models', 'weights_%0.5d.pth'%frame_idx))
+
 				
 		# Calculate Returns
 		next_state = torch.FloatTensor(next_state).to(device)
