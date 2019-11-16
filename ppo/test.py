@@ -24,13 +24,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
 from SnakeGymEnv import SnakeGymEnv
 import snake
-def running_test():
+def running_test(log_dir):
 # Parameters
 	urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
 	hidden_size = [256,256]
 	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
-	log_dir = 'log_16_11_2019_14_09_06'
+
 
 	# Create test environment.
 	p.connect(p.DIRECT)

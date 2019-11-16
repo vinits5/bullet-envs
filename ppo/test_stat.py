@@ -3,8 +3,10 @@ import test
 import numpy as np 
 import pprint
 
+log_dir = 'log1'
+
 pp = pprint.PrettyPrinter(indent=16)
-state = test.running_test()
+state = test.running_test(log_dir)
 state = np.array(state)
 for i in [0,7,15]:
 	plt.figure(1)
