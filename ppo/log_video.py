@@ -51,7 +51,7 @@ class Logger:
 		checkpoint = torch.load(weight, map_location='cpu')
 		self.net.load_state_dict(checkpoint['model'])
 
-	def test_env(self, file_name):
+	def test_env(self, file_name, max_step = 100):
 		state = self.env.reset()
 		done = False
 		total_reward = 0
@@ -65,7 +65,7 @@ class Logger:
 		p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=basePos)
 
 		loggingId = p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, file_name)
-		while steps < 100:
+		while steps < max_step:
 			state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
 			dist, _ = self.net(state)
 			next_state, reward, done, _ = self.env.step(dist.sample().cpu().numpy()[0]) #Hack
@@ -75,13 +75,14 @@ class Logger:
 			steps += 1
 		p.stopStateLogging(loggingId)
 
+	# Uses all the models in the folder 'log/models'
 	def log_all_videos(self):
-		weights = os.listdir(os.path.join(log_dir, 'models'))
-		files = [os.path.join(log_dir, 'models', w[:-4]+'.mp4') for w in weights]
-		weights = [os.path.join(log_dir, 'models', w) for w in weights]
+		weights = os.listdir(os.path.join(log_dir, 'models'))	# Finds all the .pth files.
+		files = [os.path.join(log_dir, 'models', w[:-4]+'.mp4') for w in weights]	# Create names/path for video files.
+		weights = [os.path.join(log_dir, 'models', w) for w in weights]				# Store path for all weight files.
 		for w, f in zip(weights, files):
-			self.restore_model(w)
-			self.test_env(f)
+			self.restore_model(w)			# Restore model.
+			self.test_env(f)				# Record video for 100 steps.
 
 	def log_video(weight, file_name):
 		self.restore_model(weight)
