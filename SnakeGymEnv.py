@@ -12,6 +12,9 @@ class SnakeGymEnv(gym.Env):
 		self.robot.buildMotorList()
 		self.defObservationSpace()
 		self.defActionSpace()
+		self.alpha = 1
+		self.beta = 0.1
+		self.gamma = 0.01
 
 	def reset(self, hardReset=False):
 		assert self.robot.reset(hardReset=hardReset), "Error in reset!"
@@ -63,8 +66,9 @@ class SnakeGymEnv(gym.Env):
 
 	def calculateReward(self, observation):
 		reward_xMotion = observation[48] - self._observation[48]
-		reward_yMotion = abs(observation[49] - self._observation[49])
-		total_reward = reward_xMotion - reward_yMotion
+		reward_yMotion = abs(observation[49] - self.robot.START_POSITION[2])
+		reward_energy = self.robot.calculateEnergy(observation)
+		total_reward = self.alpha*reward_xMotion - self.beta*reward_yMotion- self.gamma*reward_energy
 		return total_reward
 
 	def checkTermination(self, observation):

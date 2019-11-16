@@ -32,6 +32,7 @@ fov = 60
 nearVal = 0.1
 farVal = 100
 
+
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
 	def __init__(self, pybullet_client, urdf_root):
@@ -58,6 +59,7 @@ class Snake(object):
 		self.nearVal = nearVal
 		self.farVal = farVal
 		self.counter = 0
+		self.START_POSITION = [0,0,0]
 		# self._maxForce = np.inf
 
 		# Create functions
@@ -259,3 +261,10 @@ class Snake(object):
 		rgb_array = np.array(px)
 		rgb_array = rgb_array[:, :, :3]
 		return rgb_array
+
+	def calculateEnergy(self,observation):
+		energy = []
+		for i in range(self.numMotors):
+			energy.append(observation[self.numMotors+i]*observation[2*(self.numMotors)+i]*self._timeStep)
+		energy_total = np.sum(energy)
+		return energy_total

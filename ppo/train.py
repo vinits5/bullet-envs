@@ -32,7 +32,7 @@ def save_checkpoint(state, filename):
 
 def train():
 	# hyper-params:
-	hidden_size      = 256
+	hidden_size      = [256,256]
 	lr               = 3e-4
 	num_steps        = 20
 	mini_batch_size  = 5

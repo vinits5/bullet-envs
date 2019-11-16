@@ -27,7 +27,7 @@ import snake
 
 # Parameters
 urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
-hidden_size = 256
+hidden_size = [256,256]
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 log_dir = 'log_13_11_2019_18_03_56'
