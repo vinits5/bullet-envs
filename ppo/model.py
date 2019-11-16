@@ -23,7 +23,7 @@ class ActorCritic(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_size[0], hidden_size[1]),
             nn.ReLU(),
-            nn.Linear(hidden_size, 1)
+            nn.Linear(hidden_size[1], 1)
         )
         
         self.actor = nn.Sequential(
@@ -31,7 +31,7 @@ class ActorCritic(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_size[0], hidden_size[1]),
             nn.ReLU(),
-            nn.Linear(hidden_size, num_outputs),
+            nn.Linear(hidden_size[1], num_outputs),
         )
         self.log_std = nn.Parameter(torch.ones(1, num_outputs) * std)
         

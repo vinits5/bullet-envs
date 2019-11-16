@@ -24,46 +24,53 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
 from SnakeGymEnv import SnakeGymEnv
 import snake
-
+def running_test():
 # Parameters
-urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
-hidden_size = [256,256]
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
-log_dir = 'log_13_11_2019_18_03_56'
+	urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
+	hidden_size = [256,256]
+	use_cuda = torch.cuda.is_available()
+	device = torch.device("cuda" if use_cuda else "cpu")
+	log_dir = 'log_16_11_2019_14_09_06'
 
-# Create test environment.
-p.connect(p.GUI)
-robot = snake.Snake(p, urdf_path)
-env = SnakeGymEnv(robot)
+	# Create test environment.
+	p.connect(p.DIRECT)
+	robot = snake.Snake(p, urdf_path)
+	env = SnakeGymEnv(robot)
 
-# Check availability of cuda
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+	# Check availability of cuda
+	use_cuda = torch.cuda.is_available()
+	device = torch.device("cuda" if use_cuda else "cpu")
 
-# State space and action space
-num_inputs = env.observation_space.shape[0]
-num_outputs = env.action_space.shape[0]
+	# State space and action space
+	num_inputs = env.observation_space.shape[0]
+	num_outputs = env.action_space.shape[0]
 
-# Create network/policy.
-net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
+	# Create network/policy.
+	net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
 
-checkpoint = torch.load(os.path.join(log_dir,'weights.pth'), map_location='cpu')
-net.load_state_dict(checkpoint['model'])
+	checkpoint = torch.load(os.path.join(log_dir,'weights.pth'), map_location='cpu')
+	net.load_state_dict(checkpoint['model'])
 
-state = env.reset()
+	state = env.reset()
 
-done = False
-total_reward = 0
-steps = 0
-print_('Test Started...', color='r', style='bold')
-while steps < 100:
-	state = torch.FloatTensor(state).unsqueeze(0).to(device)
-	dist, _ = net(state)
-	next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0]) #Hack
-	print("Step No: {:3d}, Reward: {:2.3f} and done: {}".format(steps, reward, done))
-	state = next_state
-	total_reward += reward
-	steps += 1
-print_('Total Reward: {}'.format(total_reward), color='bl', style='bold')
-print('Test Ended!')
+	done = False
+	total_reward = 0
+	steps = 0
+	print_('Test Started...', color='r', style='bold')
+	STATES = []
+	while steps < 100:
+		state = torch.FloatTensor(state).unsqueeze(0).to(device)
+		dist, _ = net(state)
+		next_state, reward, done, _ = env.step(dist.sample().cpu().numpy()[0]) #Hack
+		print("Step No: {:3d}, Reward: {:2.3f} and done: {}".format(steps, reward, done))
+		state = next_state
+		total_reward += reward
+		steps += 1
+		STATES.append(state)
+	print_('Total Reward: {}'.format(total_reward), color='bl', style='bold')
+	print('Test Ended!')
+	return STATES
+
+# state = running_test()
+# print(state)
+# print(type(state))

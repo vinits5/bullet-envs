@@ -42,7 +42,7 @@ def train():
 	frame_idx  		 = 0
 	# test_rewards 	 = []
 	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
-	num_envs 		 = 2
+	num_envs 		 = 1
 	test_epochs		 = 10
 	resume_training	 = ''
 	best_test_reward = 0.0
