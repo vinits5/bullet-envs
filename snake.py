@@ -27,7 +27,6 @@ class Snake(object):
 			self.setParams(args)
 		else:
 			self.defaultParams()
-		print('################', self.SCALING_FACTOR)
 
 	def setParams(self, args):
 		self._selfCollisionEnabled = args.selfCollisionEnabled
