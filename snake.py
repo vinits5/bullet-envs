@@ -3,70 +3,73 @@ import pybullet as p
 import pybullet_data
 import time
 import math
-
-# Settings for the dynamics
-FRICTION_VALUES = [1, 0.1, 0.01]
 PI = math.pi
 gravity = -9.8
 timeStep = 1/100.0
-_gaitSelection = 1
-selfCollisionEnabled = True
-motorVelocityLimit = np.inf
-motorTorqueLimit = np.inf
-kp = 10
-kd = 0.1
-initState = [0]*16
-initPosition = [0]*3
-initOrientation = [0,0,0,1]
-SCALING_FACTOR = PI/6
-
-# Render Settings
-_cam_dist = 5.0
-_cam_yaw = 50
-_cam_pitch = -35
-_cam_roll = 0
-upAxisIndex = 2
-RENDER_HEIGHT = 720
-RENDER_WIDTH = 960
-fov = 60
-nearVal = 0.1
-farVal = 100
 
 
 class Snake(object):
 	#The snake class simulates a snake robot from HEBI
-	def __init__(self, pybullet_client, urdf_root):
+	def __init__(self, pybullet_client, urdf_root, args=None):
 
 		self.numMotors = 16
-		# self.link = 
 		self._pybulletClient = pybullet_client
-
 		self._urdf = urdf_root
-		self._selfCollisionEnabled = selfCollisionEnabled
-		self._motorVelocityLimit = motorVelocityLimit
-		self._motorTorqueLimit = motorTorqueLimit
-		self._kp = kp
-		self._kd = kd
 		self._timeStep = timeStep
-		self._gaitSelection = _gaitSelection
-
-		self._cam_dist = _cam_dist
-		self._cam_yaw = _cam_yaw
-		self._cam_pitch = _cam_pitch
-		self._cam_roll = _cam_roll
-		self.upAxisIndex = upAxisIndex
-		self.fov = fov
-		self.nearVal = nearVal
-		self.farVal = farVal
 		self.counter = 0
 		self.START_POSITION = [0,0,0]
-		# self._maxForce = np.inf
+		self.initState = [0]*16
+		self.initPosition = [0]*3
+		self.initOrientation = [0,0,0,1]
+		self.FRICTION_VALUES = [1, 0.1, 0.01]
 
-		# Create functions
-		# if self._is_render:
-		# 	self._pybullet_client = bullet_client.BulletClient(connection_mode=pybullet.GUI)
-		# else:
-		# 	self._pybullet_client = bullet_client.BulletClient()
+		if args is not None:
+			self.setParams(args)
+		else:
+			self.defaultParams()
+		print('################', self.SCALING_FACTOR)
+
+	def setParams(self, args):
+		self._selfCollisionEnabled = args.selfCollisionEnabled
+		self._motorVelocityLimit = args.motorVelocityLimit
+		self._motorTorqueLimit = args.motorTorqueLimit
+		self._kp = args.kp
+		self._kd = args.kd
+		self._gaitSelection = args.gaitSelection
+		self.SCALING_FACTOR = PI/(args.scaling_factor*1.0)
+
+		self._cam_dist = args.cam_dist
+		self._cam_yaw = args.cam_yaw
+		self._cam_pitch = args.cam_pitch
+		self._cam_roll = args.cam_roll
+		self.upAxisIndex = args.upAxisIndex
+		self.RENDER_HEIGHT = args.render_height
+		self.RENDER_WIDTH = args.render_width
+		self.fov = args.fov
+		self.nearVal = args.nearVal
+		self.farVal = args.farVal
+
+	def defaultParams(self):
+		# Settings for the dynamics
+		self._selfCollisionEnabled = True
+		self._motorVelocityLimit = np.inf
+		self._motorTorqueLimit = np.inf
+		self._kp = 10
+		self._kd = 0.1
+		self._gaitSelection = 1
+		self.SCALING_FACTOR = PI/6
+
+		# Render Settings
+		self._cam_dist = 5.0
+		self._cam_yaw = 50
+		self._cam_pitch = -35
+		self._cam_roll = 0
+		self.upAxisIndex = 2
+		self.RENDER_HEIGHT = 720
+		self.RENDER_WIDTH = 960
+		self.fov = 60
+		self.nearVal = 0.1
+		self.farVal = 100
 
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.snake)
@@ -90,9 +93,9 @@ class Snake(object):
 		return True
 
 	def setDynamics(self):
-		self._pybulletClient.changeDynamics(self.snake, -1, lateralFriction=2, anisotropicFriction=FRICTION_VALUES)
+		self._pybulletClient.changeDynamics(self.snake, -1, lateralFriction=2, anisotropicFriction=self.FRICTION_VALUES)
 		for i in range(self._pybulletClient.getNumJoints(self.snake)):
-			self._pybulletClient.changeDynamics(self.snake, i, lateralFriction=2, anisotropicFriction=FRICTION_VALUES)
+			self._pybulletClient.changeDynamics(self.snake, i, lateralFriction=2, anisotropicFriction=self.FRICTION_VALUES)
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
 		self._pybulletClient.setJointMotorControl2(bodyIndex=self.snake,
@@ -107,12 +110,12 @@ class Snake(object):
 	def resetPose(self):
 		count = 0
 		for i in (self.motorList):
-			self._pybulletClient.resetJointState(self.snake, i, initState[count])
+			self._pybulletClient.resetJointState(self.snake, i, self.initState[count])
 			count += 1
-		# print(initState)
+		# print(self.initState)
 
 	def resetPositionOrientation(self):
-		self._pybulletClient.resetBasePositionAndOrientation(self.snake, initPosition, initOrientation)
+		self._pybulletClient.resetBasePositionAndOrientation(self.snake, self.initPosition, self.initOrientation)
 
 		pass
 	def getBaseOrientation(self):
@@ -179,12 +182,12 @@ class Snake(object):
 		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, self._pybulletClient.POSITION_CONTROL, motorCommands)
 		
 	def convertActionToJointCommand(self, action):
-		motorCommands = [i*SCALING_FACTOR for i in action]
+		motorCommands = [i*self.SCALING_FACTOR for i in action]
 		return motorCommands
 		# pass
 
 	def checkFeedback(self, action, observation):
-		actionFeedback =[(action[i]*SCALING_FACTOR - observation[i])for i in range(len(self.motorList))]
+		actionFeedback =[(action[i]*self.SCALING_FACTOR - observation[i])for i in range(len(self.motorList))]
 		actionFeedback = np.asarray(actionFeedback)
 		actionNorm = np.sqrt(actionFeedback.dot(actionFeedback))
 		if actionNorm>0.05:
@@ -192,17 +195,17 @@ class Snake(object):
 		else:
 			return False
 
-	def createAction(self,action):
+	def createAction(self, action):
 		# numJoints = self._pybulletClient.getNumJoints(self.snake)
 		action_ = [0]*16
 		count = 0
-		if _gaitSelection == 0:
+		if self._gaitSelection == 0:
 			for i in range(0,self.numMotors,2):
 				
 				action_[i] = action[count]
 				count +=1
 				
-		elif _gaitSelection == 1:
+		elif self._gaitSelection == 1:
 			for i in range(1,self.numMotors,2):
 				
 				action_[i] = action[count]
@@ -245,7 +248,7 @@ class Snake(object):
 			roll=self._cam_roll,
 			upAxisIndex=self.upAxisIndex)
 		proj_matrix = self._pybulletClient.computeProjectionMatrixFOV(fov=self.fov,
-																	   aspect=float(RENDER_WIDTH)/RENDER_HEIGHT,
+																	   aspect=float(self.RENDER_WIDTH)/self.RENDER_HEIGHT,
 																	   nearVal=self.nearVal,
 																	   farVal=self.nearVal)
 
@@ -253,8 +256,8 @@ class Snake(object):
 		cyaw = -30
 		cpitch = -90
 		p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=base_pos)
-		(_, _, px, _, _) = self._pybulletClient.getCameraImage(width=RENDER_WIDTH,
-												   height=RENDER_HEIGHT,
+		(_, _, px, _, _) = self._pybulletClient.getCameraImage(width=self.RENDER_WIDTH,
+												   height=self.RENDER_HEIGHT,
 												   viewMatrix=view_matrix,
 												   projectionMatrix=proj_matrix)
 												   # renderer=self._pybulletClient.ER_BULLET_HARDWARE_OPENGL)

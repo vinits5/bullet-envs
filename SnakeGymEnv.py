@@ -2,7 +2,7 @@ import gym
 import numpy as np
 
 class SnakeGymEnv(gym.Env):
-	def __init__(self, robot):
+	def __init__(self, robot, args=None):
 		print("Snake Gym environment Created!")
 		self.robot = robot
 		self._action_bound = 1
@@ -12,9 +12,15 @@ class SnakeGymEnv(gym.Env):
 		self.robot.buildMotorList()
 		self.defObservationSpace()
 		self.defActionSpace()
-		self.alpha = 1
-		self.beta = 0.1
-		self.gamma = 0.01
+		
+		if args is not None:
+			self.alpha 		= args.alpha
+			self.beta 		= args.beta
+			self.gamma 		= args.gamma
+		else:
+			self.alpha 		= 1
+			self.beta 		= 0.1
+			self.gamma 		= 0.01
 
 	def reset(self, hardReset=False):
 		assert self.robot.reset(hardReset=hardReset), "Error in reset!"

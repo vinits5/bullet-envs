@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from agent import ppo_update, compute_gae
 from model import ActorCritic
 from multiprocessing_env import SubprocVecEnv
+from params import params
 import utils
 from utils import print_
 
@@ -30,23 +31,23 @@ from datetime import datetime
 def save_checkpoint(state, filename):
 	torch.save(state, '{}'.format(filename))
 
-def train():
+def train(args):
 	# hyper-params:
-	hidden_size      = [256,256]
-	lr               = 3e-4
-	num_steps        = 20
-	mini_batch_size  = 5
-	ppo_epochs       = 4
-	threshold_reward = 200
-	max_frames 		 = 15000
 	frame_idx  		 = 0
+	hidden_size      = args.hidden_size
+	lr               = args.lr
+	num_steps        = args.num_steps
+	mini_batch_size  = args.mini_batch_size
+	ppo_epochs       = args.ppo_epochs
+	threshold_reward = args.threshold_reward
+	max_frames 		 = args.max_frames
 	# test_rewards 	 = []
-	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
-	num_envs 		 = 16
-	test_epochs		 = 2
-	resume_training	 = ''
+	num_envs 		 = args.num_envs
+	test_epochs		 = args.test_epochs
+	resume_training	 = args.resume_training
 	best_test_reward = 0.0
-	log_dir 		 = 'log'
+	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
+	log_dir 		 = args.log_dir
 
 	now = datetime.now()
 	log_dir = log_dir + '_' + now.strftime('%d_%m_%Y_%H_%M_%S')
@@ -60,12 +61,12 @@ def train():
 	writer = SummaryWriter(log_dir)
 
 	# Create training log.
-	textio = utils.IOStream(os.path.join(log_dir, 'train.log'))
-	textio.log_params(device, num_envs, lr, threshold_reward)	
+	textio = utils.IOStream(os.path.join(log_dir, 'train.log'), args=args)
+	# textio.log_params(device, num_envs, lr, threshold_reward)	
 	utils.logFiles(log_dir)
 
 	# create multiple environments.
-	envs = [utils.make_env(p, urdf_path) for i in range(num_envs)]
+	envs = [utils.make_env(p, urdf_path, args=args) for i in range(num_envs)]
 	envs = SubprocVecEnv(envs)
 
 	# pdb.set_trace()	# Debug
@@ -89,8 +90,8 @@ def train():
 	early_stop = False
 
 	# Create env for policy testing.
-	robot = snake.Snake(p, urdf_path)
-	env = SnakeGymEnv(robot)
+	robot = snake.Snake(p, urdf_path, args=args)
+	env = SnakeGymEnv(robot, args=args)
 
 	print_('\nTraining Begins ...', color='r', style='bold')
 	textio.log('Training Begins ...')
@@ -187,4 +188,5 @@ def train():
 
 
 if __name__ == '__main__':
-	train()
+	args = params()
+	train(args)

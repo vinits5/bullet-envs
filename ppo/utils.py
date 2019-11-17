@@ -10,8 +10,9 @@ import snake
 
 
 class IOStream:
-	def __init__(self, path):
+	def __init__(self, path, args=None):
 		self.f = open(path, 'w')
+		if args is not None: self.f.write('%s'%args+'\n')
 
 	def log_params(self, device, num_envs, lr, threshold_reward):
 		self.log('Device: {}'.format(device))
@@ -56,10 +57,10 @@ def plot(frame_idx, rewards):
 	plt.plot(rewards)
 	plt.show()
 
-def make_env(p, urdf_path):
+def make_env(p, urdf_path, args=None):
 	def _thunk():
-		robot = snake.Snake(p, urdf_path)
-		env_snake = SnakeGymEnv(robot)
+		robot = snake.Snake(p, urdf_path, args=args)
+		env_snake = SnakeGymEnv(robot, args=args)
 		return env_snake
 	return _thunk
 
