@@ -68,6 +68,6 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, l
 	total_entropy = total_entropy/(states.size(0)/mini_batch_size)
 
 	writer.add_scalar('loss/epoch', total_loss, frame_idx)
-	writer.add_scaler('critic_loss/epoch',total_critic_loss,frame_idx)
-	writer.add_scaler('actor_loss/epoch',total_actor_loss,frame_idx)
+	writer.add_scalar('critic_loss/epoch',total_critic_loss,frame_idx)
+	writer.add_scalar('actor_loss/epoch',total_actor_loss,frame_idx)
 	writer.add_scalar('entropy/epoch',total_entropy,frame_idx)
