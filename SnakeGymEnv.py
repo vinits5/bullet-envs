@@ -36,7 +36,7 @@ class SnakeGymEnv(gym.Env):
 			self._observation = observation
 		else:
 			raise SystemError("Action not executed!")
-		return observation, reward, done, {}
+		return observation, reward, done, self.robot.imgs
 
 	def render(self):
 		if self.mode != "rgb_array":

@@ -65,7 +65,7 @@ class Snake(object):
 		self._cam_roll = 0
 		self.upAxisIndex = 2
 		self.RENDER_HEIGHT = 720
-		self.RENDER_WIDTH = 960
+		self.RENDER_WIDTH = 1280
 		self.fov = 60
 		self.nearVal = 0.1
 		self.farVal = 100
@@ -222,12 +222,14 @@ class Snake(object):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
+		self.imgs = []
 		action = self.createAction(action)
 		self.counter = 0
 		observation = self.getObservation()
 		while self.checkFeedback(action,observation):
 			self.applyActions(action)
 			self._pybulletClient.stepSimulation()
+			if self.counter%4 == 0: self.imgs.append(self.render())
 			observation = self.getObservation()
 			actionNorm = self.checkFeedback(action, observation)
 			time.sleep(self._timeStep)
@@ -251,17 +253,18 @@ class Snake(object):
 																	   nearVal=self.nearVal,
 																	   farVal=self.nearVal)
 
-		cdist = 2
+		cdist = 1.5
 		cyaw = -30
 		cpitch = -90
-		p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=base_pos)
+		p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=[1.28,0,0])
 		(_, _, px, _, _) = self._pybulletClient.getCameraImage(width=self.RENDER_WIDTH,
-												   height=self.RENDER_HEIGHT,
-												   viewMatrix=view_matrix,
-												   projectionMatrix=proj_matrix)
+												   height=self.RENDER_HEIGHT)
+												   # viewMatrix=view_matrix,
+												   # projectionMatrix=proj_matrix)
 												   # renderer=self._pybulletClient.ER_BULLET_HARDWARE_OPENGL)
 		rgb_array = np.array(px)
 		rgb_array = rgb_array[:, :, :3]
+		# rgb_array[:,:,0], rgb_array[:,:,2] = rgb_array[:,:,2], rgb_array[:,:,0]
 		return rgb_array
 
 	def calculateEnergy(self,observation):
