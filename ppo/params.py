@@ -16,6 +16,7 @@ def params(argv=None):
 	parser.add_argument('--test_epochs', type=int, default=2, help='Intervals to test the policy')
 	parser.add_argument('--resume_training', type=str, default='', help='Resume training')
 	parser.add_argument('--log_dir', type=str, default='log', help='Name of the log directory')
+	parser.add_argument('--mode', type=str, default='train', help='Options: [train/test]')
 
 	# SnakeGymEnv file parameters
 	parser.add_argument('--alpha', type=float, default=1.0, help='Weight applied to forward motion reward')

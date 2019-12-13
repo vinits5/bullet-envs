@@ -6,7 +6,6 @@ class SnakeGymEnv(gym.Env):
 		print("Snake Gym environment Created!")
 		self.robot = robot
 		self._action_bound = 1
-		self.mode = "rgb_array"
 
 		self.robot.reset(hardReset=True)
 		self.robot.buildMotorList()
@@ -17,10 +16,12 @@ class SnakeGymEnv(gym.Env):
 			self.alpha 		= args.alpha
 			self.beta 		= args.beta
 			self.gamma 		= args.gamma
+			self.mode 		= args.mode
 		else:
 			self.alpha 		= 1
 			self.beta 		= 0.1
 			self.gamma 		= 0.01
+			self.mode		= 'train'
 
 	def reset(self, hardReset=False):
 		assert self.robot.reset(hardReset=hardReset), "Error in reset!"
@@ -34,14 +35,22 @@ class SnakeGymEnv(gym.Env):
 			reward = self.calculateReward(observation)
 			done = self.checkTermination(observation)
 			self._observation = observation
+			if self.mode == 'test':
+				info = {'frames':self.robot.imgs, 'internal_observations':self.robot.step_internal_observations}
+			else:
+				info = {}
+
 		else:
 			raise SystemError("Action not executed!")
-		return observation, reward, done, self.robot.imgs
+		return observation, reward, done, info
 
 	def render(self):
-		if self.mode != "rgb_array":
+		if self.mode == 'train':
 			return np.array([])
-		return self.robot.render()
+		elif self.mode == 'test':
+			return self.robot.render()
+		else:
+			return np.array([])
 
 	def defObservationSpace(self):
 		# Define observation of SnakeGym environment.

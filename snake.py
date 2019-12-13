@@ -47,6 +47,7 @@ class Snake(object):
 		self.fov = args.fov
 		self.nearVal = args.nearVal
 		self.farVal = args.farVal
+		self.mode = args.mode
 
 	def defaultParams(self):
 		# Settings for the dynamics
@@ -69,6 +70,7 @@ class Snake(object):
 		self.fov = 60
 		self.nearVal = 0.1
 		self.farVal = 100
+		self.mode = 'train'
 
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.snake)
@@ -222,15 +224,20 @@ class Snake(object):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
-		self.imgs = []
+		if self.mode == 'test':
+			self.imgs = []
+			self.step_internal_observations = []
+			
 		action = self.createAction(action)
 		self.counter = 0
 		observation = self.getObservation()
 		while self.checkFeedback(action,observation):
 			self.applyActions(action)
 			self._pybulletClient.stepSimulation()
-			if self.counter%4 == 0: self.imgs.append(self.render())
+			if self.mode == 'test':
+				if self.counter%4 == 0: self.imgs.append(self.render())
 			observation = self.getObservation()
+			if self.mode == 'test': self.step_internal_observations.append(observation)
 			actionNorm = self.checkFeedback(action, observation)
 			time.sleep(self._timeStep)
 			self.counter += 1

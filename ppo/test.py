@@ -50,6 +50,8 @@ def running_test(log_dir, create_video=False):
 	else: p.connect(p.DIRECT)
 	robot = snake.Snake(p, urdf_path)
 	env = SnakeGymEnv(robot)
+	robot.mode = 'test'
+	env.mode = 'test'
 
 	# Check availability of cuda
 	use_cuda = torch.cuda.is_available()
@@ -75,11 +77,16 @@ def running_test(log_dir, create_video=False):
 	steps = 0
 	print_('Test Started...', color='r', style='bold')
 	STATES = []
-	while steps < 100:
+
+	while steps < 20:
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
 		dist, _ = net(state)
-		next_state, reward, done, imgs = env.step(dist.sample().cpu().numpy()[0]) #Hack
-		if create_video: frames = frames + imgs
+		next_state, reward, done, info = env.step(dist.sample().cpu().numpy()[0]) #Hack
+
+		print(info.keys())
+		STATES = STATES + info['internal_observations']
+		if create_video: frames = frames + info['frames']
+
 		print("Step No: {:3d}, Reward: {:2.3f} and done: {}".format(steps, reward, done))
 		state = next_state
 		total_reward += reward
