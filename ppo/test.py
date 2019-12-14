@@ -37,7 +37,7 @@ def log_video(frames):
 		out.write(frame)
 	out.release()
 
-def running_test(log_dir, create_video=False):
+def running_test(log_dir, max_steps=100, create_video=False):
 # Parameters
 	urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
 	hidden_size = [256,256]
@@ -64,7 +64,7 @@ def running_test(log_dir, create_video=False):
 	# Create network/policy.
 	net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
 
-	checkpoint = torch.load(os.path.join(log_dir,'weights.pth'), map_location='cpu')
+	checkpoint = torch.load(os.path.join(log_dir,'weights_bestPolicy.pth'), map_location='cpu')
 	net.load_state_dict(checkpoint['model'])
 
 	if create_video: frames = []
@@ -78,12 +78,12 @@ def running_test(log_dir, create_video=False):
 	print_('Test Started...', color='r', style='bold')
 	STATES = []
 
-	while steps < 20:
+	while steps < 100:
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
 		dist, _ = net(state)
 		next_state, reward, done, info = env.step(dist.sample().cpu().numpy()[0]) #Hack
 
-		print(info.keys())
+		# print(info.keys())
 		STATES = STATES + info['internal_observations']
 		if create_video: frames = frames + info['frames']
 
