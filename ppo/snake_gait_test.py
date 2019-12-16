@@ -6,14 +6,14 @@ import pybullet_data
 # log videos
 import sys
 sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-import cv2
+# import cv2
 
-def log_video(frames):
-	out = cv2.VideoWriter('gait_test.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 25, (1280, 720))
-	for frame in frames:
-		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-		out.write(frame)
-	out.release()
+# def log_video(frames):
+# 	out = cv2.VideoWriter('gait_test.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 25, (1280, 720))
+# 	for frame in frames:
+# 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+# 		out.write(frame)
+# 	out.release()
 
 def render():
 	cdist = 1.5
@@ -26,24 +26,24 @@ def render():
 											   # viewMatrix=view_matrix,
 											   # projectionMatrix=proj_matrix)
 											   # renderer=self._pybulletClient.ER_BULLET_HARDWARE_OPENGL)
-	rgb_array = np.array(px)
-	rgb_array = rgb_array[:, :, :3]
-	# rgb_array[:,:,0], rgb_array[:,:,2] = rgb_array[:,:,2], rgb_array[:,:,0]
-	return rgb_array
+	# rgb_array = np.array(px)
+	# rgb_array = rgb_array[:, :, :3]
+	# # rgb_array[:,:,0], rgb_array[:,:,2] = rgb_array[:,:,2], rgb_array[:,:,0]
+	# return rgb_array
 
 def test(max_steps, create_video=False):
-	p.connect(p.DIRECT)
+	p.connect(p.GUI)
 	p.resetSimulation()
 
 	p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 	plane = p.loadURDF("plane.urdf")
 	robot = p.loadURDF("../snake/snake.urdf", [0, 0, 0], useFixedBase=0)
-
+	obstacle = p.loadURDF("../snake/block.urdf",basePosition =  [1, 0, 0.1], useFixedBase=1)
 	p.setGravity(0, 0, -9.81)   # everything should fall down
 	p.setTimeStep(0.01)       # this slows everything down, but let's be accurate...
 	p.setRealTimeSimulation(0)  # we want to be faster than real time :)
-
+	render()
 	# For robot's joint info.
 	# for i in range(p.getNumJoints(robot)):
 	# 	if p.getJointInfo(robot, i)[2] == p.JOINT_REVOLUTE:
@@ -94,6 +94,11 @@ def test(max_steps, create_video=False):
 			if step%4==0: frames.append(render())
 
 		time.sleep(0.01)
-	if create_video: log_video(frames)
+	# if create_video: log_video(frames)
 
 	return states
+
+
+if __name__ == "__main__":
+	
+	test(10000)
