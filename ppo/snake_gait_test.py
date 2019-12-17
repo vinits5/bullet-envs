@@ -2,6 +2,7 @@ import pybullet as p
 import numpy as np
 import time
 import pybullet_data
+import matplotlib.pyplot as plt
 
 # log videos
 import sys
@@ -18,7 +19,7 @@ sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 def render():
 	cdist = 1.5
 	cyaw = -30
-	cpitch = -90
+	cpitch = 0
 	RENDER_WIDTH = 1280
 	RENDER_HEIGHT = 720
 	p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=[1.28,0,0])
@@ -31,19 +32,28 @@ def render():
 	# # rgb_array[:,:,0], rgb_array[:,:,2] = rgb_array[:,:,2], rgb_array[:,:,0]
 	# return rgb_array
 
-def test(max_steps, create_video=False):
-	p.connect(p.GUI)
+
+def getTorqueInfo(robot):
+	torque = np.array([0.0]*16)
+	for idx,motorNo in enumerate(motorList):
+		_,_,reactionForce,_= p.getJointState(robot, motorNo)
+		torque[idx] = reactionForce[2]
+	return torque
+
+def test(max_steps, create_video=False, record_torque=True):
+	p.connect(p.DIRECT)
 	p.resetSimulation()
 
 	p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 	plane = p.loadURDF("plane.urdf")
 	robot = p.loadURDF("../snake/snake.urdf", [0, 0, 0], useFixedBase=0)
-	obstacle = p.loadURDF("../snake/block.urdf",basePosition =  [1, 0, 0.1], useFixedBase=1)
+	obstacle = p.loadURDF("../snake/block.urdf",basePosition =  [2, 0, 0.1], useFixedBase=0)
 	p.setGravity(0, 0, -9.81)   # everything should fall down
 	p.setTimeStep(0.01)       # this slows everything down, but let's be accurate...
 	p.setRealTimeSimulation(0)  # we want to be faster than real time :)
 	render()
+	torque_recorded = np.zeros([max_steps,16])+2
 	# For robot's joint info.
 	# for i in range(p.getNumJoints(robot)):
 	# 	if p.getJointInfo(robot, i)[2] == p.JOINT_REVOLUTE:
@@ -63,6 +73,7 @@ def test(max_steps, create_video=False):
 	for i in range(p.getNumJoints(robot)):
 		p.getJointInfo(robot, i)
 		p.changeDynamics(robot, i, lateralFriction=2, anisotropicFriction=anistropicFriction)
+		p.enableJointForceTorqueSensor(robot,i,1)
 
 	# print(p.getDynamicsInfo(robot, 0))
 	# print(p.getDynamicsInfo(robot, 48))
@@ -90,15 +101,30 @@ def test(max_steps, create_video=False):
 
 		p.setJointMotorControlArray(robot, motor_idx.tolist(), p.POSITION_CONTROL, targetPositions=signal)
 		p.stepSimulation()
+
+		if record_torque:
+			torque_recorded[step,0:] = getTorqueInfo(robot)
+			# else:
+				# torque_recorded[step,0:] = (np.mean(torque_recorded[step-(running_width-1):step,0:],axis = 0)+getTorqueInfo(robot))/running_width
+		# print(step)
 		if create_video: 
 			if step%4==0: frames.append(render())
 
 		time.sleep(0.01)
 	# if create_video: log_video(frames)
-
-	return states
+	print(torque_recorded.shape)
+	return states, torque_recorded
 
 
 if __name__ == "__main__":
-	
-	test(10000)
+	motorList = np.arange(3,51,3)
+	running_width = 5
+	print(motorList)
+	_,torque_recorded =  test(2000)
+	for i in range(torque_recorded.shape[0]):
+		if torque_recorded[i,0] >20:
+			print("The snake has hit the wall at", i)
+			break
+	plt.plot(np.mean(torque_recorded[0:,0:1],axis = 1))
+	plt.show()
+	# print(torque_recorded[0:,9])
