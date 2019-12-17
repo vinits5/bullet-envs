@@ -85,6 +85,7 @@ class Snake(object):
 			self._pybulletClient.setGravity(0,0,gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0, flags=self._pybulletClient.URDF_USE_SELF_COLLISION)
+			self.obstacle = p.loadURDF("../snake/block.urdf",basePosition =  [2, 0, 0.1], useFixedBase=0)
 			self.setDynamics()
 		else:
 			self.buildMotorList()
@@ -97,6 +98,7 @@ class Snake(object):
 		self._pybulletClient.changeDynamics(self.snake, -1, lateralFriction=2, anisotropicFriction=self.FRICTION_VALUES)
 		for i in range(self._pybulletClient.getNumJoints(self.snake)):
 			self._pybulletClient.changeDynamics(self.snake, i, lateralFriction=2, anisotropicFriction=self.FRICTION_VALUES)
+			self._pybulletClient.enableJointForceTorqueSensor(self.snake,i,1)
 
 	def setDesiredMotorById(self, motorId, desiredAngle):
 		self._pybulletClient.setJointMotorControl2(bodyIndex=self.snake,
@@ -130,8 +132,10 @@ class Snake(object):
 	def getActionDimensions(self):
 		return (len(self.motorList))
 
+
+	#changing from 55 to 56
 	def getObservationDimensions(self):
-		return (len(self.motorList)*3 + 7)
+		return (len(self.motorList)*3 + 8)
 
 	def getObservationUpperBound(self):
 		upperBound = np.array([0.0]*self.getObservationDimensions())
@@ -169,13 +173,21 @@ class Snake(object):
 			_,_,_,torque[idx]= self._pybulletClient.getJointState(self.snake, motorNo)
 		return torque
 
+	def getForceInfo(self):
+		torque = 0.0
+		_,_,reactionForce,_= self._pybulletClient.getJointState(self.snake, 0)  #0 is the head motor
+		torque = reactionForce[2]
+		return torque
+
+
 	def getObservation(self):
 		observation = np.array([0.0]*self.getObservationDimensions())
 		observation[0:len(self.motorList)] = self.getPosition()
 		observation[len(self.motorList):2*len(self.motorList)] = self.getVelocity()
 		observation[2*len(self.motorList):3*len(self.motorList)] = self.getTorque()
 		observation[3*len(self.motorList):3*len(self.motorList)+3] = self.getBasePosition()
-		observation[3*len(self.motorList)+3:] = self.getBaseOrientation()
+		observation[3*len(self.motorList)+3:3*len(self.motorList)+7] = self.getBaseOrientation()
+		observation[55] = self.getForceInfo()
 		return observation
 
 	def applyActions(self, action):
