@@ -23,6 +23,7 @@ class Snake(object):
 		self.initOrientation = [0,0,0,1]
 		self.FRICTION_VALUES = [1, 0.1, 0.01]
 		self.MAX_TORQUE = 3 
+		self.forces = [self.MAX_TORQUE]*self.numMotors
 
 		if args is not None:
 			self.setParams(args)
@@ -72,14 +73,14 @@ class Snake(object):
 		self.nearVal = 0.1
 		self.farVal = 100
 		self.mode = 'train'
-		self.forces = [self.MAX_TORQUE]*self.numMotors
-
-
 
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.snake)
 		self.motorList = np.arange(3,(numJoints),3).tolist()
 		# print("Moror List", self.motorList)
+
+	def add_obstacle(position):
+		self.obstacle = self._pybulletClient.loadURDF("../snake/block.urdf", basePosition=position, useFixedBase=0)
 
 	def reset(self, hardReset):
 		# Check for hard reset.
@@ -89,7 +90,7 @@ class Snake(object):
 			self._pybulletClient.setGravity(0,0,gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0, flags=self._pybulletClient.URDF_USE_SELF_COLLISION)
-			self.obstacle = p.loadURDF("../snake/block.urdf",basePosition =  [2, 0, 0.1], useFixedBase=0)
+			self.add_obstacle([2, 0, 0.1])
 			self.setDynamics()
 		else:
 			self.buildMotorList()
@@ -250,8 +251,8 @@ class Snake(object):
 		while self.checkFeedback(action,observation):
 			self.applyActions(action)
 			self._pybulletClient.stepSimulation()
-			if self.mode == 'test':
-				if self.counter%4 == 0: self.imgs.append(self.render())
+			#if self.mode == 'test':
+			#	if self.counter%4 == 0: self.imgs.append(self.render())
 			observation = self.getObservation()
 			if self.mode == 'test': self.step_internal_observations.append(observation)
 			actionNorm = self.checkFeedback(action, observation)

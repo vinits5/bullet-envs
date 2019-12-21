@@ -83,8 +83,8 @@ class SnakeGymEnv(gym.Env):
 		reward_xMotion = observation[48] - self._observation[48]
 		reward_yMotion = abs(observation[49] - self.robot.START_POSITION[2])
 		reward_energy = self.robot.calculateEnergy(observation)
-		if np.abs(observation[55]) > 10:
-			reward_collision = -10
+		if np.abs(observation[55]) > 10: reward_collision = -10
+		else: reward_collision = 0
 		total_reward = self.alpha*reward_xMotion + reward_collision - self.beta*reward_yMotion- self.gamma*reward_energy
 		return total_reward
 
