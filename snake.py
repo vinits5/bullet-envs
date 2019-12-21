@@ -22,6 +22,7 @@ class Snake(object):
 		self.initPosition = [0]*3
 		self.initOrientation = [0,0,0,1]
 		self.FRICTION_VALUES = [1, 0.1, 0.01]
+		self.MAX_TORQUE = 3 
 
 		if args is not None:
 			self.setParams(args)
@@ -71,6 +72,9 @@ class Snake(object):
 		self.nearVal = 0.1
 		self.farVal = 100
 		self.mode = 'train'
+		self.forces = [self.MAX_TORQUE]*self.numMotors
+
+
 
 	def buildMotorList(self):
 		numJoints = self._pybulletClient.getNumJoints(self.snake)
@@ -192,7 +196,7 @@ class Snake(object):
 
 	def applyActions(self, action):
 		motorCommands = self.convertActionToJointCommand(action)
-		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, self._pybulletClient.POSITION_CONTROL, motorCommands)
+		self._pybulletClient.setJointMotorControlArray(self.snake, self.motorList, self._pybulletClient.POSITION_CONTROL, motorCommands, forces=self.forces)
 		
 	def convertActionToJointCommand(self, action):
 		motorCommands = [i*self.SCALING_FACTOR for i in action]

@@ -41,7 +41,7 @@ def getTorqueInfo(robot):
 	return torque
 
 def test(max_steps, create_video=False, record_torque=True):
-	p.connect(p.DIRECT)
+	p.connect(p.GUI)
 	p.resetSimulation()
 
 	p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -93,13 +93,14 @@ def test(max_steps, create_video=False, record_torque=True):
 	states = []
 	frames = []
 	states.append([0]*16)
+	forces = np.ones([motor_idx.shape[0]])*4   #MAX TORQUE is 4Nm
 	print('\nGait Testing Started!')
 	for step in range(max_steps):
 		t = time.time() - start
 		signal = calculateSignal(t)
 		states.append(signal)
-
-		p.setJointMotorControlArray(robot, motor_idx.tolist(), p.POSITION_CONTROL, targetPositions=signal)
+		print(motor_idx.shape, forces.shape)
+		p.setJointMotorControlArray(robot, motor_idx.tolist(), p.POSITION_CONTROL, targetPositions=signal, forces=forces.tolist())
 		p.stepSimulation()
 
 		if record_torque:
