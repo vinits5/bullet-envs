@@ -79,8 +79,8 @@ class Snake(object):
 		self.motorList = np.arange(3,(numJoints),3).tolist()
 		# print("Moror List", self.motorList)
 
-	def add_obstacle(self, position):
-		self.obstacle = self._pybulletClient.loadURDF("../snake/block.urdf", basePosition=position, useFixedBase=0)
+	def add_obstacle(self, urdf_file, position):
+		self.obstacle = self._pybulletClient.loadURDF(os.path.join(os.pardir, "snake", urdf_file), basePosition=position, useFixedBase=0)
 
 	def reset(self, hardReset):
 		# Check for hard reset.
@@ -90,7 +90,7 @@ class Snake(object):
 			self._pybulletClient.setGravity(0,0,gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0, flags=self._pybulletClient.URDF_USE_SELF_COLLISION)
-			self.add_obstacle([2, 0, 0.1])
+			self.add_obstacle("block.urdf", [2, 0, 0.1])
 			self.setDynamics()
 		else:
 			self.buildMotorList()
@@ -133,6 +133,26 @@ class Snake(object):
 	def getBasePosition(self):
 		position,_ = self._pybulletClient.getBasePositionAndOrientation(self.snake)
 		return position
+
+	def getLinkPositions(self):
+		# Returns position of all the links as [x1, x2, ..., xn, y1, y2, ..., yn, z1, z2, ..., zn] (N*3)
+
+		total_links = self._pybulletClient.getNumJoints(self.snake)		# N
+		data = self._pybulletClient.getLinkStates(self.snake, np.arange(0, total_links, 3))
+		data = np.array(data)		# Check pybullet guide to find returns of getLinkStates() function.
+		position = np.array([np.array(x) for x in data[:,0]])	# First element is tuple of linkWorldPosition.
+		position = position.T.reshape(-1)
+		return position
+
+	def getLinkOrientations(self):
+		# Returns position of all the links as [x1, x2, ..., xn, y1, y2, ..., yn, z1, z2, ..., zn, w1, w2, ..., wn] (N*4)
+
+		total_links = self._pybulletClient.getNumJoints(self.snake)		# N
+		data = self._pybulletClient.getLinkStates(self.snake, np.arange(0, total_links, 3))
+		data = np.array(data)		# Check pybullet guide to find returns of getLinkStates() function.
+		orientation = np.array([np.array(x) for x in data[:,1]])	# Second element is tuple of linkWorldPosition.
+		orientation = orientation.T.reshape(-1)
+		return orientation
 
 	def getActionDimensions(self):
 		return (len(self.motorList))
@@ -213,6 +233,16 @@ class Snake(object):
 		else:
 			return False
 
+	def checkSnakeHeight(self):
+		bodyHeightThreshold = 0.1
+		total_links = self._pybulletClient.getNumJoints(self.snake)		# N
+		data = self._pybulletClient.getLinkStates(self.snake, np.arange(0, total_links, 3))
+		z_avg = sum([x[0][2] for x in data])/len(data)
+		if z_avg > bodyHeightThreshold:
+			return True
+		else:
+			return False
+
 	def createAction(self, action):
 		# numJoints = self._pybulletClient.getNumJoints(self.snake)
 		action_ = [0]*16
@@ -244,20 +274,31 @@ class Snake(object):
 		if self.mode == 'test':
 			self.imgs = []
 			self.step_internal_observations = []
+			self.link_positions = []
 			
 		action = self.createAction(action)
 		self.counter = 0
+		self.endDue2Height = False
 		observation = self.getObservation()
 		while self.checkFeedback(action,observation):
 			self.applyActions(action)
 			self._pybulletClient.stepSimulation()
+			
 			#if self.mode == 'test':
 			#	if self.counter%4 == 0: self.imgs.append(self.render())
+			
 			observation = self.getObservation()
 			if self.mode == 'test': self.step_internal_observations.append(observation)
+			if self.mode == 'test': self.link_positions.append(self.getLinkPositions())
+
 			actionNorm = self.checkFeedback(action, observation)
 			time.sleep(self._timeStep)
 			self.counter += 1
+
+			if self.checkSnakeHeight(): 
+				self.endDue2Height = True
+				break
+
 			if self.counter > 40:	# To avoid extra steps and collision.
 				break
 		# print(self.counter)

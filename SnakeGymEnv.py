@@ -13,15 +13,17 @@ class SnakeGymEnv(gym.Env):
 		self.defActionSpace()
 		
 		if args is not None:
-			self.alpha 		= args.alpha
-			self.beta 		= args.beta
-			self.gamma 		= args.gamma
-			self.mode 		= args.mode
+			self.alpha 				= args.alpha
+			self.beta 				= args.beta
+			self.gamma 				= args.gamma
+			self.mode 				= args.mode
+			self._gaitSelection 	= args._gaitSelection
 		else:
-			self.alpha 		= 1
-			self.beta 		= 0.1
-			self.gamma 		= 0.01
-			self.mode		= 'train'
+			self.alpha 				= 1
+			self.beta 				= 0.01
+			self.gamma 				= 0.1
+			self.mode				= 'train'
+			self._gaitSelection 	= 1
 
 	def reset(self, hardReset=False):
 		assert self.robot.reset(hardReset=hardReset), "Error in reset!"
@@ -34,9 +36,12 @@ class SnakeGymEnv(gym.Env):
 			observation = self.robot.getObservation()
 			reward = self.calculateReward(observation)
 			done = self.checkTermination(observation)
+			if done:
+				reward += (-5)
+				self.reset()
 			self._observation = observation
 			if self.mode == 'test':
-				info = {'frames':self.robot.imgs, 'internal_observations':self.robot.step_internal_observations}
+				info = {'frames':self.robot.imgs, 'internal_observations':self.robot.step_internal_observations, 'link_positions': self.robot.link_positions}
 			else:
 				info = {}
 
@@ -66,7 +71,10 @@ class SnakeGymEnv(gym.Env):
 	def defActionSpace(self):
 		# Define actions for SnakeGym environment.
 			# joint positions						(n x 1)
-		action_dim = int(self.robot.numMotors/2)
+		if self._gaitSelection == 0 or self._gaitSelection:
+			action_dim = int(self.robot.numMotors/2)
+		else: action_dim = int(self.robot.numMotors)
+		
 		action_high = np.array([self._action_bound] * action_dim)
 		self.action_space = gym.spaces.Box(-action_high, action_high)
 
@@ -89,5 +97,7 @@ class SnakeGymEnv(gym.Env):
 		return total_reward
 
 	def checkTermination(self, observation):
-		if abs(observation[49]) > 0.5: return True
+		if abs(observation[9]) > 0.5: return True
+		elif: self.robot.checkSnakeHeight(): return True
+		elif: self.robot.endDue2Height() == True: return True
 		else: return False

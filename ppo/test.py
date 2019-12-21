@@ -47,7 +47,11 @@ def running_test(log_dir, max_steps=100, create_video=False):
 
 	# Create test environment.
 	if create_video: p.connect(p.GUI)
-	else: p.connect(p.DIRECT)
+	else: p.connect(p.GUI)
+	cdist = 1.5
+	cyaw = -30
+	cpitch = -90
+	# p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=[1.28,0,0])
 	robot = snake.Snake(p, urdf_path)
 	env = SnakeGymEnv(robot)
 	robot.mode = 'test'
@@ -64,7 +68,7 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	# Create network/policy.
 	net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
 
-	checkpoint = torch.load(os.path.join(log_dir,'weights_bestPolicy.pth'), map_location='cpu')
+	checkpoint = torch.load(os.path.join(log_dir,'models/weights_01000.pth'), map_location='cpu')
 	net.load_state_dict(checkpoint['model'])
 
 	if create_video: frames = []
@@ -77,15 +81,18 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	steps = 0
 	print_('Test Started...', color='r', style='bold')
 	STATES = []
+	link_positions = []
 
-	while steps < 100:
+	while steps < max_steps:
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
 		dist, _ = net(state)
+		# print(dist.sample().cpu().numpy()[0])
 		next_state, reward, done, info = env.step(dist.sample().cpu().numpy()[0]) #Hack
 
 		# print(info.keys())
 		STATES = STATES + info['internal_observations']
 		if create_video: frames = frames + info['frames']
+		link_positions = link_positions + info['link_positions']
 
 		print("Step No: {:3d}, Reward: {:2.3f} and done: {}".format(steps, reward, done))
 		state = next_state
@@ -94,7 +101,8 @@ def running_test(log_dir, max_steps=100, create_video=False):
 		STATES.append(state)
 	print_('Total Reward: {}'.format(total_reward), color='bl', style='bold')
 	print('Test Ended!')
-
+	print(len(link_positions))
+	np.savetxt('rl_policy_linkpositions_2.txt', np.array(link_positions))
 	if create_video: log_video(frames)
 	return STATES
 
