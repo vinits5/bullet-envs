@@ -79,7 +79,7 @@ class Snake(object):
 		self.motorList = np.arange(3,(numJoints),3).tolist()
 		# print("Moror List", self.motorList)
 
-	def add_obstacle(position):
+	def add_obstacle(self, position):
 		self.obstacle = self._pybulletClient.loadURDF("../snake/block.urdf", basePosition=position, useFixedBase=0)
 
 	def reset(self, hardReset):
