@@ -12,14 +12,32 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
 from SnakeGymEnv import SnakeGymEnv
+from multiprocessing_env import SubprocVecEnv
 import snake
 from datetime import datetime
 
 #################### Environment and Agent ####################
-def create_env(p, args):
+
+def create_env(p, args): #creates a single environment for testing
 	urdf_path = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
 	robot = snake.Snake(p, urdf_path, args=args)
 	return SnakeGymEnv(robot, args=args)
+
+def make_env(p, urdf_path, args=None):
+	def _thunk():
+		robot = snake.Snake(p, urdf_path, args=args)
+		env_snake = SnakeGymEnv(robot, args=args)
+		return env_snake
+	return _thunk
+
+def create_envs(p, args, N):  #creates multiple environments for training
+	urdf_path = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
+	robot = snake.Snake(p, urdf_path, args=args)
+
+	envs = [make_env(robot, urdf_path, args= args) for i in range(N)]  
+	envs = SubprocEnv(envs)
+
+	return envs
 
 def policy(state, weights):
 	return np.matmul(weights, state.reshape(-1,1))
@@ -126,10 +144,11 @@ class ARS:
 			os.system('cp train.py %s'%(args.log))
 
 		p.connect(p.DIRECT)
-		self.env = create_env(p, args)
+		self.envs = create_envs(p, args, args.N)
+		self.env  = create_envs(p, args)
 		# self.env = wrappers.Monitor(self.env, os.path.join(args.log,'videos'), force=True)
 
-		self.size = [self.env.action_space.shape[0], self.env.observation_space.shape[0]]
+		self.size = [self.envs.action_space.shape[0], self.envs.observation_space.shape[0]]
 		self.weights = np.zeros(self.size)
 		if args.normalizer: self.normalizer = Normalizer([1,self.size[1]])
 		else: self.normalizer=None
@@ -143,8 +162,14 @@ class ARS:
 	def train_one_epoch(self):
 		delta = [sample_delta(self.size) for _ in range(self.N)]
 
-		reward_p = [test_env(self.env, policy, self.weights + self.v*x, normalizer=self.normalizer) for x in delta]
-		reward_n = [test_env(self.env, policy, self.weights - self.v*x, normalizer=self.normalizer) for x in delta]
+		weights_p = [(self.weights+self.v*x) for x in delta]
+		weights_n = [(self.weights-self.v*x) for x in delta]
+
+		reward_p = test_envs(self.envs, policy, weights_p, normalizer = self.normalizer)
+		reward_p = test_envs(self.envs, policy, weights_n, normalizer = self.normalizer)
+
+		# reward_p = [test_env(self.envs, policy, self.weights + self.v*x, normalizer=self.normalizer) for x in delta]
+		# reward_n = [test_env(self.envs, policy, self.weights - self.v*x, normalizer=self.normalizer) for x in delta]
 		
 		return update_weights([reward_p, reward_n, delta], self.lr, self.b, self.weights)
 
@@ -157,7 +182,7 @@ class ARS:
 			print('Counter: {}'.format(counter))
 			self.weights = self.train_one_epoch()
 
-			test_reward, num_plays = test_env(self.env, policy, self.weights, normalizer=self.normalizer, eval_policy=True)
+			test_reward, num_plays = test_env(self.env, policy, self.weights, normalizer=self.normalizer, eval_policy=True) #create a single env
 			self.save_policy(counter)
 			writer.add_scalar('test_reward', test_reward, counter)
 			writer.add_scalar('episodic_steps', num_plays, counter)

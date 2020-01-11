@@ -30,6 +30,7 @@ def test_env(env, policy, weights, normalizer=None, path=None):
 	# Argument:
 		# env:			Object of the gym environment.
 		# policy:		A function that will take weights, state and returns actions
+
 	if path: np.savetxt(path+'.txt', weights)		
 	state = env.reset()
 	state = state + np.random.random_sample(state.shape)#*0.01
@@ -52,6 +53,45 @@ def test_env(env, policy, weights, normalizer=None, path=None):
 
 		total_states.append(state)
 		total_reward += reward
+		steps += 1
+		state = next_state
+	print(float(total_reward), steps)
+	if path is None: return float(total_reward)
+	else: return float(total_reward), steps
+
+
+def test_envs(envs, policy, weights, normalizer=None, path=None):
+	# Argument:
+		# env:			Object of the gym environment.
+		# policy:		A function that will take weights, state and returns actions
+	state_size = envs.observation_space.shape[0]
+	if path: np.savetxt(path+'.txt', weights)		
+	state = envs.reset()
+	state = state + np.random.random_sample(states.shape)#*0.01
+	done = False
+	total_reward = 0.0
+	total_states = []
+	steps = 0
+
+	while not done and steps<5000:
+		action = []
+		for direction in range (len(wieghts)):
+			state_each = state[direction:direction+state_size]
+			if normalizer:
+				state_each = normalizer.normalize(state_each)
+			action_each = policy(state_each, weights)
+			action = action.append(action.each)
+		next_state, reward, done, _ = envs.step(action)
+		#if abs(next_state[2]) < 0.0001*10:
+		#	reward = -100
+		#	done = True
+		# print(next_state[2], reward, done)
+		# reward = max(min(reward, 1), -1)
+
+		# envs.render()	#If rendering needed
+
+		total_states.append(state)
+		total_reward += sum(reward)
 		steps += 1
 		state = next_state
 	print(float(total_reward), steps)
