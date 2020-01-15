@@ -32,10 +32,8 @@ def make_env(p, urdf_path, args=None):
 
 def create_envs(p, args, N):  #creates multiple environments for training
 	urdf_path = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
-	robot = snake.Snake(p, urdf_path, args=args)
-
-	envs = [make_env(robot, urdf_path, args= args) for i in range(N)]  
-	envs = SubprocEnv(envs)
+	envs = [make_env(p, urdf_path, args= args) for i in range(N)]  
+	envs = SubprocVecEnv(envs)
 
 	return envs
 
@@ -71,6 +69,52 @@ def test_env(env, policy, weights, normalizer=None, eval_policy=False):
 		state = next_state
 	if eval_policy: return float(total_reward), steps
 	else: return float(total_reward)
+
+
+def test_envs(envs, policy, weights, normalizer=None, path=None, eval_policy=False):
+	# Argument:
+		# env:			Object of the gym environment.
+		# policy:		A function that will take weights, state and returns actions
+	state_size = envs.observation_space.shape[0]
+	if path: np.savetxt(path+'.txt', weights)		
+	state = envs.reset()
+	state = state + np.random.random_sample(state.shape)#*0.01
+	done = [False]*16
+	total_reward = [0.0]*16
+	total_states = []
+	steps = 0
+
+	while steps<50:
+		action = []
+		for direction in range(weights.shape[0]):
+			state_each = state[direction]+ np.random.random_sample(state[direction].shape)
+			if normalizer:
+				if not eval_policy: normalizer.observe(state_each)
+				state_each = normalizer.normalize(state_each)
+
+			action_each = policy(state_each, weights[direction])
+			# print("weights[direction]",state_each)
+			action.append(action_each)
+		action = np.array(action)
+		next_state, reward, done, _ = envs.step(action)
+		# print("reward",action_each)
+		#if abs(next_state[2]) < 0.0001*10:
+		#	reward = -100
+		#	done = True
+		# print(next_state[2], reward, done)
+		# reward = max(min(reward, 1), -1)
+
+		# envs.render()	#If rendering needed
+
+		total_states.append(state)
+		total_reward += reward
+		steps += 1
+		state = next_state
+		# print("Steps", steps)
+	print(total_reward, steps)
+	if path is None: return total_reward
+	else: return total_reward, steps
+
 
 #################### ARS algorithm ####################
 def sort_directions(data, b):
@@ -144,8 +188,10 @@ class ARS:
 			os.system('cp train.py %s'%(args.log))
 
 		p.connect(p.DIRECT)
+
+		self.env  = create_env(p, args)
 		self.envs = create_envs(p, args, args.N)
-		self.env  = create_envs(p, args)
+		
 		# self.env = wrappers.Monitor(self.env, os.path.join(args.log,'videos'), force=True)
 
 		self.size = [self.envs.action_space.shape[0], self.envs.observation_space.shape[0]]
@@ -162,11 +208,10 @@ class ARS:
 	def train_one_epoch(self):
 		delta = [sample_delta(self.size) for _ in range(self.N)]
 
-		weights_p = [(self.weights+self.v*x) for x in delta]
-		weights_n = [(self.weights-self.v*x) for x in delta]
-
+		weights_p = np.array([(self.weights+self.v*x) for x in delta])
+		weights_n = np.array([(self.weights-self.v*x) for x in delta])
 		reward_p = test_envs(self.envs, policy, weights_p, normalizer = self.normalizer)
-		reward_p = test_envs(self.envs, policy, weights_n, normalizer = self.normalizer)
+		reward_n = test_envs(self.envs, policy, weights_n, normalizer = self.normalizer)
 
 		# reward_p = [test_env(self.envs, policy, self.weights + self.v*x, normalizer=self.normalizer) for x in delta]
 		# reward_n = [test_env(self.envs, policy, self.weights - self.v*x, normalizer=self.normalizer) for x in delta]
@@ -202,7 +247,7 @@ if __name__ == '__main__':
 	parser.add_argument('--b', type=int, default=16, help='No of top performing directions')
 	parser.add_argument('--lr', type=float, default=0.02, help='Learning Rate')
 	parser.add_argument('--normalizer', type=bool, default=True, help='use normalizer')
-	parser.add_argument('--log', type=str, default='exp_snake', help='Log folder to store videos')
+	parser.add_argument('--log', type=str, default='exp_snake_1', help='Log folder to store videos')
 
 	parser.add_argument('--mode', type=str, default='train', help='Options: [train/test]')
 

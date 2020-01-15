@@ -3,6 +3,7 @@ import pybullet as p
 import pybullet_data
 import time
 import math
+import os
 PI = math.pi
 gravity = -9.8
 timeStep = 1/100.0
@@ -22,7 +23,7 @@ class Snake(object):
 		self.initPosition = [0]*3
 		self.initOrientation = [0,0,0,1]
 		self.FRICTION_VALUES = [1, 0.1, 0.01]
-		self.MAX_TORQUE = 3 
+		self.MAX_TORQUE = np.inf 
 		self.forces = [self.MAX_TORQUE]*self.numMotors
 
 		if args is not None:
@@ -90,7 +91,7 @@ class Snake(object):
 			self._pybulletClient.setGravity(0,0,gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.snake = self._pybulletClient.loadURDF(self._urdf, [0, 0, 0], useFixedBase=0, flags=self._pybulletClient.URDF_USE_SELF_COLLISION)
-			self.add_obstacle("block.urdf", [2, 0, 0.1])
+			# self.add_obstacle("block.urdf", [2, 0, 0.1])
 			self.setDynamics()
 		else:
 			self.buildMotorList()

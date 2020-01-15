@@ -73,7 +73,7 @@ def test_envs(envs, policy, weights, normalizer=None, path=None):
 	total_states = []
 	steps = 0
 
-	while not done and steps<5000:
+	while not done and steps<500:
 		action = []
 		for direction in range (len(wieghts)):
 			state_each = state[direction:direction+state_size]
@@ -148,8 +148,8 @@ if __name__ == '__main__':
 	parser.add_argument('--nearVal', type=float, default=0.1, help='minimum clipping value for camera')
 	parser.add_argument('--farVal', type=float, default=100, help='maximum clipping value for camera')
 
-	idx = 59
-	path = os.path.join('exp_snake', 'models', 'policy'+str(idx))
+	idx = 1380
+	path = os.path.join('exp_snake_1', 'models', 'policy'+str(idx))
 	weights = np.loadtxt(os.path.join(path, 'weights.txt'))
 	args = parser.parse_args()
 
