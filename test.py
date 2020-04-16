@@ -3,7 +3,7 @@ import gym
 import pybullet as p
 
 class Args:
-	urdf_root = 'turtlebot/turtlebot.urdf'
+	urdf_root = 'turtlebot_urdf/turtlebot.urdf'
 	mode = 'train'
 
 p.connect(p.GUI)

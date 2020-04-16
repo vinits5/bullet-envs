@@ -3,7 +3,12 @@ import pybullet_data
 import time
 import math
 import os
+import random
 PI = math.pi
+
+import world_env as w_env
+import turtlebot_lidar as lidar
+
 gravity = -9.8
 timeStep = 1/100.0
 
@@ -21,7 +26,12 @@ class Turtlebot(object):
 		self.MAX_TORQUE = 1000
 		self.forces = [self.MAX_TORQUE]*self.numMotors
 		self._speed = 10
-
+		self.wall_boundary = [-4.8,4.8]
+		self.obstacle_centers = [[2,0],[-2,-2],[-2,1],[1.8,-2]]
+		self.w = w_env.Maze()
+		self.lidar = lidar.LIDAR()
+		self.goal_reached_threshold = 0.3
+		self.threshold = self.goal_reached_threshold+0.2
 		# if args is not None:
 		# 	self.setParams(args)
 		# else:
@@ -61,20 +71,28 @@ class Turtlebot(object):
 		self.farVal = 100
 		self.mode = 'train'
 
-	def add_obstacle(self, urdf_file, position):
-		pass
+	def add_env(self):
+
+		self.w.generate_walls()
+		self.w.generate_obstacles()
+		
 
 	def buildMotorList(self):
 		numJoints = 2					# Joints [0, 1] refers to wheel motors.
 		self.motorList = np.arange(0, numJoints).tolist()
 
 	def getGoalPosition(self):
-		return self.goalPosition
 
-	def createGoalPosition(self):
-		# This function will generate random goal positions.
-		# self.goalPosition = np.array([])
-		pass
+		X = [random.uniform(self.wall_boundary[0],self.wall_boundary[1]),random.uniform(self.wall_boundary[0],self.wall_boundary[1])]
+
+		for centers in self.obstacle_centers:
+			if ((X[0]-(centers[0]))**2+ (X[1]-(centers[1]))**2) > (self.threshold)**2:
+				self.goalPosition = X
+				return self.goalPosition
+			else:
+				# print("generate points again")
+				self.getGoalPosition()
+
 
 	def reset(self, hardReset=False):
 		# Check for hard reset.
@@ -85,6 +103,7 @@ class Turtlebot(object):
 			self._pybulletClient.setGravity(0, 0, gravity)
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.turtlebot = self._pybulletClient.loadURDF(self._urdf, self.initPosition)
+			self.add_env()
 			# self.add_obstacle("block.urdf", [2, 0, 0.1])
 		else:
 			self.resetPositionOrientation()
@@ -105,12 +124,11 @@ class Turtlebot(object):
 		return (len(self.motorList))
 
 	def getObservationDimensions(self):
-		# Pass size of Lidar Data.
-		return 180
+		return len(self.getObservation())
 
 	def getObservationUpperBound(self):
-		upperBound = np.array([0.0]*self.getObservationDimensions())
-		upperBound *= 4
+		upperBound = np.array([1.0]*self.getObservationDimensions())
+		upperBound *= self.wall_boundary[0]
 		return upperBound
 
 	def getObservationLowerBound(self):
@@ -138,9 +156,13 @@ class Turtlebot(object):
 		return torque
 
 	def getObservation(self):
-		# observation = self.lidar()
-		# return observation
-		pass
+		pos = self.getBasePosition()
+		quat = self.getBaseOrientation()
+		observation_position = [self.goalPosition[0]-pos[0],self.goalPosition[1]-pos[1]]
+		observation_lidar,_,_,_ = self.lidar.set_ray(pos,quat)
+		observation = observation_lidar+observation_position
+		return observation
+		
 
 	def applyActions(self, action):
 		leftWheelVelocity = action[0]*self._speed
