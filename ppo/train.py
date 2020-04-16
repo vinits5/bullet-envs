@@ -24,8 +24,8 @@ import sys
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
-from SnakeGymEnv import SnakeGymEnv
-import snake
+from TurtlebotGymEnv import TurtlebotGymEnv
+import turtlebot
 from datetime import datetime
 
 def save_checkpoint(state, filename):
@@ -46,7 +46,7 @@ def train(args):
 	test_epochs		 = args.test_epochs
 	resume_training	 = args.resume_training
 	best_test_reward = 0.0
-	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "snake/snake.urdf")
+	urdf_path		 = os.path.join(BASE_DIR, os.pardir, "turtlebot_urdf/turtlebot.urdf")
 	log_dir 		 = args.log_dir
 
 	now = datetime.now()
@@ -90,8 +90,8 @@ def train(args):
 	early_stop = False
 
 	# Create env for policy testing.
-	robot = snake.Snake(p, urdf_path, args=args)
-	env = SnakeGymEnv(robot, args=args)
+	robot = turtlebot.Turtlebot(p, urdf_path, args=args)
+	env = TurtlebotGymEnv(robot, args=args)
 
 	print_('\nTraining Begins ...', color='r', style='bold')
 	textio.log('Training Begins ...')

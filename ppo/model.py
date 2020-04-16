@@ -33,7 +33,7 @@ class ActorCritic(nn.Module):
 			nn.ReLU()
 		)
 		self.mu = nn.Linear(hidden_size[1], num_outputs)
-		self.sigma = nn.Sequential(nn.Linear(hidden_size[1], num_outputs), nn.Sigmoid())
+		self.sigma = nn.Sequential(nn.Linear(hidden_size[1], num_outputs), nn.Tanh())
 		
 		self.apply(init_weights)
 		

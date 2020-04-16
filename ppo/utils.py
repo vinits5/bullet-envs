@@ -5,8 +5,8 @@ import sys
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
-from SnakeGymEnv import SnakeGymEnv
-import snake
+from TurtlebotGymEnv import TurtlebotGymEnv
+import turtlebot
 
 
 class IOStream:
@@ -36,9 +36,9 @@ def logFiles(log_dir):
 	os.system('cp utils.py %s'%(code_dir))
 	os.system('cp train.py %s'%(code_dir))
 	os.system('cp test.py %s'%(code_dir))
-	robot_file = os.path.join(os.pardir, 'snake.py')
+	robot_file = os.path.join(os.pardir, 'turtlebot.py')
 	os.system('cp %s %s'%(robot_file, code_dir))
-	gym_file = os.path.join(os.pardir, 'SnakeGymEnv.py')
+	gym_file = os.path.join(os.pardir, 'TurtlebotGymEnv.py')
 	os.system('cp %s %s'%(gym_file, code_dir))
 
 ###################### Print Operations #########################
@@ -59,8 +59,8 @@ def plot(frame_idx, rewards):
 
 def make_env(p, urdf_path, args=None):
 	def _thunk():
-		robot = snake.Snake(p, urdf_path, args=args)
-		env_snake = SnakeGymEnv(robot, args=args)
+		robot = turtlebot.Turtlebot(p, urdf_path, args=args)
+		env_snake = TurtlebotGymEnv(robot, args=args)
 		return env_snake
 	return _thunk
 

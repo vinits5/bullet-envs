@@ -87,8 +87,8 @@ class Turtlebot(object):
 
 		for centers in self.obstacle_centers:
 			if ((X[0]-(centers[0]))**2+ (X[1]-(centers[1]))**2) > (self.threshold)**2:
-				self.goalPosition = X
-				return self.goalPosition
+				self.goal = X
+				return self.goal
 			else:
 				# print("generate points again")
 				self.getGoalPosition()
@@ -104,6 +104,7 @@ class Turtlebot(object):
 			self._pybulletClient.loadURDF("plane.urdf")
 			self.turtlebot = self._pybulletClient.loadURDF(self._urdf, self.initPosition)
 			self.add_env()
+			self.getGoalPosition()
 			# self.add_obstacle("block.urdf", [2, 0, 0.1])
 		else:
 			self.resetPositionOrientation()

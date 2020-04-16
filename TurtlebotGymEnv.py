@@ -3,14 +3,14 @@ import numpy as np
 from turtlebot import Turtlebot
 
 class TurtlebotGymEnv(gym.Env):
-	def __init__(self, p, args=None):
+	def __init__(self, robot, args=None):
 		print("Turtlebot Gym environment Created!")
 		if args is not None:
 			self.mode 				= args.mode
 		else:
 			self.mode				= 'train'
 
-		self.robot = Turtlebot(p, args.urdf_root, args)
+		self.robot = robot
 		self._action_bound = 1
 
 		self.robot.reset(hardReset=True)
@@ -27,10 +27,11 @@ class TurtlebotGymEnv(gym.Env):
 		action = self.checkBound(action)
 		if self.robot.step(action):
 			observation = self.robot.getObservation()
-			print(observation[126:])
+			# print(observation[126:])
 			reward,done_reward = self.calculateReward(observation)
-			reward = 0.0
+			# reward = 0.0
 			done = self.checkTermination(observation)
+			# print(self.robot.goal,done_reward,done,reward)
 			if (done_reward or done):
 				self.reset()
 			self._observation = observation
@@ -77,7 +78,7 @@ class TurtlebotGymEnv(gym.Env):
 	def calculateReward(self, observation):
 		done = False
 		basePosition = self.robot.getBasePosition()
-		goalPosition = self.robot.getGoalPosition()
+		goalPosition = self.robot.goal
 		distance_reward = ((basePosition[0] - goalPosition[0])**2 + (basePosition[1] - goalPosition[1])**2)**0.5
 		
 		if distance_reward < self.robot.goal_reached_threshold:
@@ -87,7 +88,7 @@ class TurtlebotGymEnv(gym.Env):
 			goal_achieved_reward = 0
 		
 		step_reward = -0.1
-		if min(observation[0:126])<0.01:
+		if min(observation[0:126])<0.2:
 			collision_reward = -10.0
 		else:
 			collision_reward = 0
@@ -95,5 +96,8 @@ class TurtlebotGymEnv(gym.Env):
 
 
 	def checkTermination(self, observation):
-		if min(observation[0:126])<0.01:
+		done = False
+		# print(min(observation[0:126]))
+		if min(observation[0:126])<0.2	:
 			done = True
+		return done

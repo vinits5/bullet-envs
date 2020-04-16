@@ -32,7 +32,7 @@ class Maze:
 
 	def generate_obstacles(self):
 
-		b1 = p.loadURDF("./turtlebot_urdf/obstacles.urdf",basePosition=[2,0,0.8])
-		b2 = p.loadURDF("./turtlebot_urdf/obstacles.urdf",basePosition=[-2,-2,0.8])
-		b3 = p.loadURDF("./turtlebot_urdf/obstacles.urdf",basePosition=[-2,1,0.8])
-		b4 = p.loadURDF("./turtlebot_urdf/obstacles.urdf",basePosition=[1.8,-2,0.8])
+		b1 = p.loadURDF("../turtlebot_urdf/obstacles.urdf",basePosition=[2,0,0.8])
+		b2 = p.loadURDF("../turtlebot_urdf/obstacles.urdf",basePosition=[-2,-2,0.8])
+		b3 = p.loadURDF("../turtlebot_urdf/obstacles.urdf",basePosition=[-2,1,0.8])
+		b4 = p.loadURDF("../turtlebot_urdf/obstacles.urdf",basePosition=[1.8,-2,0.8])
