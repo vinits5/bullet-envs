@@ -19,7 +19,6 @@ class Turtlebot(object):
 		self._pybulletClient = pybullet_client
 		self._urdf = urdf_root
 		self._timeStep = timeStep
-		self.counter = 0
 		self.initPosition = [0,0,0]
 		self.initOrientation = [0,0,0,1]
 		
@@ -32,6 +31,7 @@ class Turtlebot(object):
 		self.lidar = lidar.LIDAR()
 		self.goal_reached_threshold = 0.3
 		self.threshold = self.goal_reached_threshold+0.2
+		self.discrete = args.discrete
 		# if args is not None:
 		# 	self.setParams(args)
 		# else:
@@ -105,6 +105,7 @@ class Turtlebot(object):
 			self.turtlebot = self._pybulletClient.loadURDF(self._urdf, self.initPosition)
 			self.add_env()
 			self.getGoalPosition()
+			self.defDiscreteActions()
 			# self.add_obstacle("block.urdf", [2, 0, 0.1])
 		else:
 			self.resetPositionOrientation()
@@ -164,8 +165,12 @@ class Turtlebot(object):
 		observation = observation_lidar+observation_position
 		return observation
 		
+	def defDiscreteActions(self):
+		self._discrete_actions = {0: [0.8, 1], 1: [1, 1], 2: [1, 0.8]}
+		self.action_dim = len(self._discrete_actions)
 
 	def applyActions(self, action):
+		if self.discrete: action = self._discrete_actions[int(action)]			# For discrete actions
 		leftWheelVelocity = action[0]*self._speed
 		rightWheelVelocity = action[1]*self._speed
 		self._pybulletClient.setJointMotorControl2(self.turtlebot, self.motorList[0], self._pybulletClient.VELOCITY_CONTROL, targetVelocity=leftWheelVelocity, force=1000)
@@ -175,11 +180,13 @@ class Turtlebot(object):
 		self._pybulletClient.setTimeStep(self._timeStep)
 
 	def step(self, action):
-		self.counter = 0
-		self.applyActions(action)
-		time.sleep(self._timeStep)
-		self._pybulletClient.stepSimulation()
-		observation = self.getObservation()
+		counter = 0
+		while counter<50:
+			self.applyActions(action)
+			time.sleep(self._timeStep)
+			self._pybulletClient.stepSimulation()
+			counter += 1
+		# observation = self.getObservation()
 		return True
 	
 	def render(self):

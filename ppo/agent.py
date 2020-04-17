@@ -21,20 +21,21 @@ def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
 		returns.insert(0, gae + values[step])
 	return returns
 
-def ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantage):
+def ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantage, discrete):
 	batch_size = states.size(0)
 	for _ in range(batch_size // mini_batch_size):
 		rand_ids = np.random.randint(0, batch_size, mini_batch_size)
-		yield states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+		if not discrete: yield states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+		else: yield states[rand_ids], actions[rand_ids], log_probs[rand_ids], returns[rand_ids], advantage[rand_ids]
 
-def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantages, writer, frame_idx, clip_param=0.2):
+def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantages, writer, frame_idx, discrete, clip_param=0.2):
 	total_loss = 0.0
 	# total_advantage = 0.0
 	total_actor_loss = 0.0
 	total_critic_loss = 0.0
 	total_entropy = 0.0
 	for _ in range(ppo_epochs):
-		for state, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantages):
+		for state, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantages, discrete):
 			dist, value = model(state)
 			entropy = dist.entropy().mean()
 			new_log_probs = dist.log_prob(action)

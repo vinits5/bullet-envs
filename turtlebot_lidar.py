@@ -42,7 +42,7 @@ class LIDAR(object):
 	def ray_generator(self,ray_start,ray_end):
 		rayHitColor = [0,0,1]
 		data_ray_cast = (p.rayTestBatch(rayFromPositions = ray_start, rayToPositions = ray_end))
-		p.addUserDebugLine(ray_start[0],ray_end[0], rayHitColor)
+		# p.addUserDebugLine(ray_start[0],ray_end[0], rayHitColor)
 		# print(data_ray_cast)
 		return data_ray_cast
 

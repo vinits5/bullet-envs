@@ -71,10 +71,11 @@ def train(args):
 
 	# pdb.set_trace()	# Debug
 	num_inputs = envs.observation_space.shape[0]
-	num_outputs = envs.action_space.shape[0]
+	if not args.discrete: num_outputs = envs.action_space.shape[0]		# for continuous actions
+	else: num_outputs = envs.action_space.n 				# for discrete actions
 
 	# Create Policy/Network
-	net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
+	net = ActorCritic(num_inputs, num_outputs, hidden_size, args.discrete).to(device)
 	optimizer = optim.Adam(net.parameters(), lr=lr)
 
 	# If use pretrained policy.
@@ -116,7 +117,6 @@ def train(args):
 			# Find action using policy.
 			dist, value = net(state)
 			action = dist.sample()
-			action = action #HACK
 
 			# Take actions and find MDP.
 			next_state, reward, done, _ = envs.step(action.cpu().numpy())
@@ -184,7 +184,7 @@ def train(args):
 		textio.log('Total Training Reward: {}'.format(total_reward))
 
 		# Update the Policy.
-		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage, writer, frame_idx)
+		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage, writer, frame_idx, args.discrete)
 
 
 if __name__ == '__main__':

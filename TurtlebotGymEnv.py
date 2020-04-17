@@ -12,6 +12,7 @@ class TurtlebotGymEnv(gym.Env):
 
 		self.robot = robot
 		self._action_bound = 1
+		self.discrete = args.discrete
 
 		self.robot.reset(hardReset=True)
 		self.robot.buildMotorList()
@@ -24,11 +25,11 @@ class TurtlebotGymEnv(gym.Env):
 		return self._observation
 
 	def step(self, action):
-		action = self.checkBound(action)
+		if not self.discrete: action = self.checkBound(action)			# only for cotinuous
 		if self.robot.step(action):
 			observation = self.robot.getObservation()
 			# print(observation[126:])
-			reward,done_reward = self.calculateReward(observation)
+			reward, done_reward = self.calculateReward(observation)
 			# reward = 0.0
 			done = self.checkTermination(observation)
 			# print(self.robot.goal,done_reward,done,reward)
@@ -59,9 +60,14 @@ class TurtlebotGymEnv(gym.Env):
 	def defActionSpace(self):
 		# Define actions for Turtlebot environment.
 			# joint positions						(n x 1)
-		action_dim = int(self.robot.numMotors)
-		action_high = np.array([self._action_bound] * action_dim)
-		self.action_space = gym.spaces.Box(-action_high, action_high)
+		if self.discrete:
+			# For discrete actions.
+			self.action_space = gym.spaces.Discrete(self.robot.action_dim)
+		else:
+			# For continuous actions.
+			action_dim = int(self.robot.numMotors)
+			action_high = np.array([self._action_bound] * action_dim)
+			self.action_space = gym.spaces.Box(-action_high, action_high)
 
 	# Check if the network output is in feasible range.
 	def checkBound(self, action):
