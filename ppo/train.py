@@ -98,7 +98,7 @@ def train(args):
 	textio.log('Training Begins ...')
 	while frame_idx < max_frames and not early_stop:
 		print_('\nTraining Policy!', color='r', style='bold')
-		textio.log('\n############## Epoch: %0.5d ##############'%(int(frame_idx/20)))
+		textio.log('\n############## Epoch: %0.5d ##############'%(int(frame_idx/num_steps)))
 
 		# Memory buffers
 		log_probs = []
@@ -111,7 +111,7 @@ def train(args):
 		total_reward = 0.0
 
 		for i in range(num_steps):
-			print('Steps taken: {} & Epoch: {}\r'.format(i, int(frame_idx/20)), end="")
+			print('Epoch: [{}/{}] & Steps taken: [{}/{}]\r'.format(int(frame_idx/num_steps)+1, int(max_frames/num_steps), i+1, num_steps), end="")
 			state = torch.FloatTensor(state).to(device)
 
 			# Find action using policy.
@@ -121,7 +121,7 @@ def train(args):
 			# Take actions and find MDP.
 			next_state, reward, done, _ = envs.step(action.cpu().numpy())
 			total_reward += sum(reward)
-			textio.log('Steps: {} and Reward: {}'.format(int(frame_idx%20), total_reward))
+			textio.log('Epoch: {} and Reward: {}'.format(int(frame_idx%num_steps), total_reward))
 
 			# Calculate log(policy)
 			log_prob = dist.log_prob(action)
@@ -140,7 +140,7 @@ def train(args):
 			frame_idx += 1
 
 			# Test Trained Policy.
-			if frame_idx % 40 == 0:
+			if frame_idx % 100 == 0:
 				print_('\n\nEvaluate Policy!', color='bl', style='bold')
 				test_reward = np.mean([utils.test_env(env, net, test_idx) for test_idx in range(test_epochs)])
 
@@ -149,7 +149,7 @@ def train(args):
 				writer.add_scalar('test_reward', test_reward, frame_idx)
 				
 				print_('\nTest Reward: {}\n'.format(test_reward), color='bl', style='bold')
-				textio.log('Test Reward: {}'.format(test_reward))
+				textio.log('\nTest Reward: {}'.format(test_reward))
 
 				# Save various factors of training.
 				snap = {'frame_idx': frame_idx,

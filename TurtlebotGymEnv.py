@@ -98,7 +98,7 @@ class TurtlebotGymEnv(gym.Env):
 			collision_reward = -10.0
 		else:
 			collision_reward = 0
-		return (-distance_reward + step_reward + collision_reward + goal_achieved_reward,done)
+		return (-distance_reward*0.1 + step_reward + collision_reward + goal_achieved_reward, done)
 
 
 	def checkTermination(self, observation):

@@ -76,7 +76,7 @@ def test_env(env, model, idx, vis=False):
 	steps = 0
 	# print('In env')
 	print('Test No: {}\r'.format(idx), end="")
-	while not done and steps < 100:
+	while not done and steps < 20:
 		# print('Test in steps')
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
 		dist, _ = model(state)
