@@ -11,7 +11,8 @@ class TurtlebotGymEnv(gym.Env):
 			self.mode				= 'train'
 
 		self.robot = robot
-		self._action_bound = 1
+		self._action_bound_high = 1
+		self._action_bound_low = 0
 		self.discrete = args.discrete
 
 		self.robot.reset(hardReset=True)
@@ -66,8 +67,9 @@ class TurtlebotGymEnv(gym.Env):
 		else:
 			# For continuous actions.
 			action_dim = int(self.robot.numMotors)
-			action_high = np.array([self._action_bound] * action_dim)
-			self.action_space = gym.spaces.Box(-action_high, action_high)
+			action_high = np.array([self._action_bound_high] * action_dim)
+			action_low = np.array([self._action_bound_low] * action_dim)
+			self.action_space = gym.spaces.Box(action_low, action_high)
 
 	# Check if the network output is in feasible range.
 	def checkBound(self, action):

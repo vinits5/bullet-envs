@@ -24,7 +24,7 @@ class Turtlebot(object):
 		
 		self.MAX_TORQUE = 1000
 		self.forces = [self.MAX_TORQUE]*self.numMotors
-		self._speed = 10
+		self._speed = 20
 		self.wall_boundary = [-4.8,4.8]
 		self.obstacle_centers = [[2,0],[-2,-2],[-2,1],[1.8,-2]]
 		self.w = w_env.Maze()
@@ -181,7 +181,7 @@ class Turtlebot(object):
 
 	def step(self, action):
 		counter = 0
-		while counter<50:
+		while counter<100:
 			self.applyActions(action)
 			time.sleep(self._timeStep)
 			self._pybulletClient.stepSimulation()

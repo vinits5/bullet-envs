@@ -49,7 +49,7 @@ class ActorCritic(nn.Module):
 			dist = Categorical(mu)
 		else:
 			# For continuous actions.
-			mu 	= torch.tanh(self.mu(hidden_state))
-			sigma = self.sigma(hidden_state) + 0.001
+			mu 	= (torch.sigmoid(self.mu(hidden_state))/2.0) + 0.25
+			sigma = (self.sigma(hidden_state)/4.0) + 0.001
 			dist  = Normal(mu, sigma)
 		return dist, value

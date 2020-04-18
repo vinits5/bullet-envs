@@ -1,2 +1,4 @@
 /__pycache__
 /turtlebot_env_test.py
+ppo/__pycache__
+ppo/log*

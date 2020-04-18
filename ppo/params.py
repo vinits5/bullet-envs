@@ -12,7 +12,7 @@ def params(argv=None):
 	parser.add_argument('--ppo_epochs', type=int, default=4, help='Number of epochs in each PPO update')
 	parser.add_argument('--threshold_reward', type=int, default=200, help='Threshold reward to stop training')
 	parser.add_argument('--max_frames', type=int, default=150000, help='Maximum frames for training')
-	parser.add_argument('--num_envs', type=int, default=16, help='Number of environments for distributed synchronous PPO')
+	parser.add_argument('--num_envs', type=int, default=32, help='Number of environments for distributed synchronous PPO')
 	parser.add_argument('--test_epochs', type=int, default=2, help='Intervals to test the policy')
 	parser.add_argument('--resume_training', type=str, default='', help='Resume training')
 	parser.add_argument('--log_dir', type=str, default='log', help='Name of the log directory')

@@ -27,8 +27,10 @@ import sys
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, os.pardir))
-from SnakeGymEnv import SnakeGymEnv
-import snake
+from TurtlebotGymEnv import TurtlebotGymEnv
+import turtlebot
+from params import params
+
 
 def log_video(frames):
 	out = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 25, (1280, 720))
@@ -38,8 +40,8 @@ def log_video(frames):
 	out.release()
 
 def running_test(log_dir, max_steps=100, create_video=False):
-# Parameters
-	urdf_path = os.path.join(os.pardir, "snake/snake.urdf")
+	args = params()
+	urdf_path = os.path.join(os.pardir, os.path.join(BASE_DIR, os.pardir, "turtlebot_urdf/turtlebot.urdf"))
 	hidden_size = [256,256]
 	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
@@ -52,10 +54,8 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	cyaw = -30
 	cpitch = -90
 	# p.resetDebugVisualizerCamera(cameraDistance=cdist, cameraYaw=cyaw, cameraPitch=cpitch, cameraTargetPosition=[1.28,0,0])
-	robot = snake.Snake(p, urdf_path)
-	env = SnakeGymEnv(robot)
-	robot.mode = 'test'
-	env.mode = 'test'
+	robot = turtlebot.Turtlebot(p, urdf_path, args)
+	env = TurtlebotGymEnv(robot, args)
 
 	# Check availability of cuda
 	use_cuda = torch.cuda.is_available()
@@ -68,11 +68,12 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	# Create network/policy.
 	net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
 
-	checkpoint = torch.load(os.path.join(log_dir,'models/weights_01000.pth'), map_location='cpu')
+	checkpoint = torch.load(os.path.join(log_dir,'models/weights_15000.pth'), map_location='cpu')
 	net.load_state_dict(checkpoint['model'])
 
 	if create_video: frames = []
 	state = env.reset()
+	print("Goal Position of Robot: ", env.robot.goal)
 
 	if create_video: frames.append(env.render())
 	# if create_video: frames.append(img)
@@ -87,25 +88,21 @@ def running_test(log_dir, max_steps=100, create_video=False):
 		state = torch.FloatTensor(state).unsqueeze(0).to(device)
 		dist, _ = net(state)
 		# print(dist.sample().cpu().numpy()[0])
-		next_state, reward, done, info = env.step(dist.sample().cpu().numpy()[0]) #Hack
+		action = dist.sample().cpu().numpy()[0]
+		next_state, reward, done, info = env.step(action)
 
 		# print(info.keys())
-		STATES = STATES + info['internal_observations']
-		if create_video: frames = frames + info['frames']
-		link_positions = link_positions + info['link_positions']
 
-		print("Step No: {:3d}, Reward: {:2.3f} and done: {}".format(steps, reward, done))
+		print("Step No: {:3d}, Reward: {:2.3f}, action: {}".format(steps, reward, action))
 		state = next_state
 		total_reward += reward
 		steps += 1
 		STATES.append(state)
 	print_('Total Reward: {}'.format(total_reward), color='bl', style='bold')
 	print('Test Ended!')
-	print(len(link_positions))
-	np.savetxt('rl_policy_linkpositions_2.txt', np.array(link_positions))
 	if create_video: log_video(frames)
 	return STATES
 
-# state = running_test()
+state = running_test('log_17_04_2020_17_50_06')
 # print(state)
 # print(type(state))
