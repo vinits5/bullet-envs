@@ -185,6 +185,7 @@ def train(args):
 
 		# Update the Policy.
 		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage, writer, frame_idx, args.discrete)
+		envs.reset()
 
 
 if __name__ == '__main__':

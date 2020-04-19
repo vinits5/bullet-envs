@@ -35,7 +35,8 @@ class TurtlebotGymEnv(gym.Env):
 			done = self.checkTermination(observation)
 			# print(self.robot.goal,done_reward,done,reward)
 			if (done_reward or done):
-				self.reset()
+				if done_reward: self.reset(hardReset=True)
+				else: self.reset()
 			self._observation = observation
 			info = {}
 		else:
@@ -94,14 +95,16 @@ class TurtlebotGymEnv(gym.Env):
 			done = True
 		else:
 			goal_achieved_reward = 0
+
+		distance_reward = distance_reward / ((goalPosition[0]**2 + goalPosition[1]**2)**0.5)
 		
 		step_reward = -0.1
 		if min(observation[0:126])<0.2:
 			collision_reward = -10.0
 		else:
 			collision_reward = 0
-		return (-distance_reward*0.1 + step_reward + collision_reward + goal_achieved_reward, done)
-
+		return (-distance_reward + step_reward + collision_reward + goal_achieved_reward, done)
+		# return (step_reward + collision_reward + goal_achieved_reward, done)
 
 	def checkTermination(self, observation):
 		done = False

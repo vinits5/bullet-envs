@@ -24,7 +24,7 @@ class Turtlebot(object):
 		
 		self.MAX_TORQUE = 1000
 		self.forces = [self.MAX_TORQUE]*self.numMotors
-		self._speed = 20
+		self._speed = 60
 		self.wall_boundary = [-4.8,4.8]
 		self.obstacle_centers = [[2,0],[-2,-2],[-2,1],[1.8,-2]]
 		self.w = w_env.Maze()
@@ -96,7 +96,7 @@ class Turtlebot(object):
 
 	def reset(self, hardReset=False):
 		# Check for hard reset.
-		self.goalPosition = np.array([1, 1, 1])
+		# self.goalPosition = np.array([1, 1, 1])
 		if hardReset:
 			self._pybulletClient.resetSimulation()
 			self._pybulletClient.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -160,13 +160,13 @@ class Turtlebot(object):
 	def getObservation(self):
 		pos = self.getBasePosition()
 		quat = self.getBaseOrientation()
-		observation_position = [self.goalPosition[0]-pos[0],self.goalPosition[1]-pos[1]]
+		observation_position = [self.goal[0]-pos[0],self.goal[1]-pos[1]]
 		observation_lidar,_,_,_ = self.lidar.set_ray(pos,quat)
 		observation = observation_lidar+observation_position
 		return observation
 		
 	def defDiscreteActions(self):
-		self._discrete_actions = {0: [0.8, 1], 1: [1, 1], 2: [1, 0.8]}
+		self._discrete_actions = {0: [0.6, 1], 1: [1, 1], 2: [1, 0.6]}
 		self.action_dim = len(self._discrete_actions)
 
 	def applyActions(self, action):
