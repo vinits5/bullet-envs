@@ -120,8 +120,7 @@ def train(args):
 
 			# Take actions and find MDP.
 			next_state, reward, done, _ = envs.step(action.cpu().numpy())
-			total_reward += sum(reward)
-			textio.log('Epoch: {} and Reward: {}'.format(int(frame_idx%num_steps), total_reward))
+			total_reward += (sum(reward) / len(reward))
 
 			# Calculate log(policy)
 			log_prob = dist.log_prob(action)
@@ -165,8 +164,9 @@ def train(args):
 			if frame_idx % 1000 == 0:
 				if not os.path.exists(os.path.join(log_dir, 'models')): os.mkdir(os.path.join(log_dir, 'models'))
 				save_checkpoint(snap, os.path.join(log_dir, 'models', 'weights_%0.5d.pth'%frame_idx))
-
 				
+		textio.log('Epoch: {} and Reward: {}'.format(int(frame_idx%num_steps), total_reward))
+
 		# Calculate Returns
 		next_state = torch.FloatTensor(next_state).to(device)
 		_, next_value = net(next_state)

@@ -36,6 +36,7 @@ def logFiles(log_dir):
 	os.system('cp utils.py %s'%(code_dir))
 	os.system('cp train.py %s'%(code_dir))
 	os.system('cp test.py %s'%(code_dir))
+	os.system('cp params.py %s'%(code_dir))
 	robot_file = os.path.join(os.pardir, 'turtlebot.py')
 	os.system('cp %s %s'%(robot_file, code_dir))
 	gym_file = os.path.join(os.pardir, 'TurtlebotGymEnv.py')

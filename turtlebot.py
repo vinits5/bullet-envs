@@ -181,7 +181,7 @@ class Turtlebot(object):
 
 	def step(self, action):
 		counter = 0
-		while counter<100:
+		while counter<25:
 			self.applyActions(action)
 			time.sleep(self._timeStep)
 			self._pybulletClient.stepSimulation()
