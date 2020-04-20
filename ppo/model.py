@@ -21,17 +21,17 @@ class ActorCritic(nn.Module):
 		
 		self.critic = nn.Sequential(
 			nn.Linear(num_inputs, hidden_size[0]),
-			nn.ReLU(),
+			nn.Tanh(),
 			nn.Linear(hidden_size[0], hidden_size[1]),
-			nn.ReLU(),
+			nn.Tanh(),
 			nn.Linear(hidden_size[1], 1)
 		)
 		
 		self.actor = nn.Sequential(
 			nn.Linear(num_inputs, hidden_size[0]),
-			nn.ReLU(),
+			nn.Tanh(),
 			nn.Linear(hidden_size[0], hidden_size[1]),
-			nn.ReLU()
+			nn.Tanh()
 		)
 		self.mu = nn.Linear(hidden_size[1], num_outputs)
 		if not self.discrete:
@@ -45,7 +45,8 @@ class ActorCritic(nn.Module):
 
 		if self.discrete:
 			# For discrete actions.
-			mu = nn.functional.softmax(self.mu(hidden_state), dim=-1)
+			mu = self.mu(hidden_state)
+			mu = nn.functional.softmax(mu, dim=-1)
 			dist = Categorical(mu)
 		else:
 			# For continuous actions.

@@ -76,8 +76,8 @@ class LIDAR(object):
 		rotation_matrix = np.array(rotation_matrix).reshape(3,3)
 		rotation_matrix[2,:] = [0,0,1]
 		ray_start = [pos[0],pos[1],pos[2]+0.45]
+		
 		for theta in self.ray_angle:
-
 			ray_start_vector.append(ray_start)
 			vector = np.array([self.radius*np.cos(theta),self.radius*np.sin(theta),0])
 			vector = np.matmul(rotation_matrix,vector)

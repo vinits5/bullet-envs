@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # log videos
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 
 # algorithm imports
@@ -63,12 +63,13 @@ def running_test(log_dir, max_steps=100, create_video=False):
 
 	# State space and action space
 	num_inputs = env.observation_space.shape[0]
-	num_outputs = env.action_space.shape[0]
+	if not args.discrete: num_outputs = env.action_space.shape[0]
+	else: num_outputs = env.action_space.n
 
 	# Create network/policy.
-	net = ActorCritic(num_inputs, num_outputs, hidden_size).to(device)
+	net = ActorCritic(num_inputs, num_outputs, hidden_size, discrete=args.discrete).to(device)
 
-	checkpoint = torch.load(os.path.join(log_dir,'models/weights_15000.pth'), map_location='cpu')
+	checkpoint = torch.load(os.path.join(log_dir,'models/weights_06000.pth'), map_location='cpu')
 	net.load_state_dict(checkpoint['model'])
 
 	if create_video: frames = []
@@ -103,6 +104,6 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	if create_video: log_video(frames)
 	return STATES
 
-state = running_test('log_17_04_2020_17_50_06')
+state = running_test('log_19_04_2020_19_38_40')
 # print(state)
 # print(type(state))
