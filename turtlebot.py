@@ -31,6 +31,7 @@ class Turtlebot(object):
 		self.goal_reached_threshold = 0.3
 		self.threshold = self.goal_reached_threshold+0.2
 		self.discrete = args.discrete
+		self.action_steps = args.action_steps
 		# if args is not None:
 		# 	self.setParams(args)
 		# else:
@@ -180,7 +181,7 @@ class Turtlebot(object):
 
 	def step(self, action):
 		counter = 0
-		while counter<25:
+		while counter<self.action_steps:
 			self.applyActions(action)
 			time.sleep(self._timeStep)
 			self._pybulletClient.stepSimulation()

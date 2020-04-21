@@ -6,11 +6,11 @@ def params(argv=None):
 	parser = argparse.ArgumentParser(description='PPO parameters')
 	# Training file parameters
 	parser.add_argument('--hidden_size', type=list, default=[256,256], help='Hidden Layers')
-	parser.add_argument('--lr', type=float, default=3e-4, help='Learning Rate for PPO')
-	parser.add_argument('--num_steps', type=int, default=25, help='Steps in each epoch')
-	parser.add_argument('--mini_batch_size', type=int, default=5, help='Batch Size for PPO')
+	parser.add_argument('--lr', type=float, default=3e-04, help='Learning Rate for PPO')
+	parser.add_argument('--num_steps', type=int, default=50, help='Steps in each epoch')
+	parser.add_argument('--mini_batch_size', type=int, default=400, help='Batch Size for PPO')
 	parser.add_argument('--ppo_epochs', type=int, default=4, help='Number of epochs in each PPO update')
-	parser.add_argument('--threshold_reward', type=int, default=200, help='Threshold reward to stop training')
+	parser.add_argument('--threshold_reward', type=int, default=5000, help='Threshold reward to stop training')
 	parser.add_argument('--max_frames', type=int, default=150000, help='Maximum frames for training')
 	parser.add_argument('--num_envs', type=int, default=64, help='Number of environments for distributed synchronous PPO')
 	parser.add_argument('--test_epochs', type=int, default=2, help='Intervals to test the policy')
@@ -25,6 +25,8 @@ def params(argv=None):
 
 	# turtlebot file parameters
 	parser.add_argument('--discrete', type=bool, default=True, help='Discrete or Continuous Environment.')
+	parser.add_argument('--action_steps', type=int, default=25, help='Number of time to repeat each action in turtlebot.py')
+	
 	parser.add_argument('--selfCollisionEnabled', type=bool, default=True, help='Collision between links')
 	parser.add_argument('--motorVelocityLimit', type=float, default=np.inf, help='Joint velocity limit')
 	parser.add_argument('--motorTorqueLimit', type=float, default=np.inf, help='Joint torque limit')
