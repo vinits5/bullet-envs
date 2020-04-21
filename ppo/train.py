@@ -28,6 +28,11 @@ from TurtlebotGymEnv import TurtlebotGymEnv
 import turtlebot
 from datetime import datetime
 
+def normalize(x):
+    x -= x.mean()
+    x /= (x.std() + 1e-8)
+    return x
+
 def save_checkpoint(state, filename):
 	torch.save(state, '{}'.format(filename))
 
@@ -179,13 +184,14 @@ def train(args):
 		states    = torch.cat(states)
 		actions   = torch.cat(actions)
 		advantage = returns - values
+		advantage = normalize(advantage)
 		
 		writer.add_scalar('reward/episode', total_reward, frame_idx)
 		textio.log('Total Training Reward: {}'.format(total_reward))
 
 		# Update the Policy.
 		ppo_update(net, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantage, writer, frame_idx, args.discrete)
-		envs.reset()
+		# envs.reset()
 
 
 if __name__ == '__main__':
