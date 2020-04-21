@@ -26,7 +26,6 @@ class Turtlebot(object):
 		self.forces = [self.MAX_TORQUE]*self.numMotors
 		self._speed = 60
 		self.wall_boundary = [-4.8,4.8]
-		self.obstacle_centers = [[2,0],[-2,-2],[-2,1],[1.8,-2]]
 		self.w = w_env.Maze()
 		self.lidar = lidar.LIDAR()
 		self.goal_reached_threshold = 0.3
@@ -85,7 +84,7 @@ class Turtlebot(object):
 
 		X = [random.uniform(self.wall_boundary[0],self.wall_boundary[1]),random.uniform(self.wall_boundary[0],self.wall_boundary[1])]
 
-		for centers in self.obstacle_centers:
+		for centers in self.w.obstacle_centers:
 			if ((X[0]-(centers[0]))**2+ (X[1]-(centers[1]))**2) > (self.threshold)**2:
 				self.goal = X
 				return self.goal
