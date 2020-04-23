@@ -5,7 +5,7 @@ import numpy as np
 def params(argv=None):
 	parser = argparse.ArgumentParser(description='PPO parameters')
 	# Training file parameters
-	parser.add_argument('--hidden_size', type=list, default=[256,256], help='Hidden Layers')
+	parser.add_argument('--hidden_size', type=list, default=[64, 32], help='Hidden Layers')
 	parser.add_argument('--lr', type=float, default=3e-04, help='Learning Rate for PPO')
 	parser.add_argument('--num_steps', type=int, default=50, help='Steps in each epoch')
 	parser.add_argument('--mini_batch_size', type=int, default=400, help='Batch Size for PPO')

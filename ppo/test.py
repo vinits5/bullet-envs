@@ -42,7 +42,7 @@ def log_video(frames):
 def running_test(log_dir, max_steps=100, create_video=False):
 	args = params()
 	urdf_path = os.path.join(os.pardir, os.path.join(BASE_DIR, os.pardir, "turtlebot_urdf/turtlebot.urdf"))
-	hidden_size = [256,256]
+	hidden_size = [64, 32]
 	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -69,7 +69,7 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	# Create network/policy.
 	net = ActorCritic(num_inputs, num_outputs, hidden_size, discrete=args.discrete).to(device)
 
-	checkpoint = torch.load(os.path.join(log_dir,'models/weights_06000.pth'), map_location='cpu')
+	checkpoint = torch.load(os.path.join(log_dir,'models/weights_99000.pth'), map_location='cpu')
 	net.load_state_dict(checkpoint['model'])
 
 	if create_video: frames = []
@@ -104,6 +104,6 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	if create_video: log_video(frames)
 	return STATES
 
-state = running_test('log_19_04_2020_19_38_40')
+state = running_test('log_21_04_2020_23_02_20')
 # print(state)
 # print(type(state))

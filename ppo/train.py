@@ -161,7 +161,7 @@ def train(args):
 						'best_test_reward': best_test_reward,
 						'optimizer' : optimizer.state_dict()}
 
-				if best_test_reward < test_reward:
+				if best_test_reward <= test_reward:
 					save_checkpoint(snap, os.path.join(log_dir, 'weights_bestPolicy.pth'))
 					best_test_reward = test_reward
 				save_checkpoint(snap, os.path.join(log_dir,'weights.pth'))

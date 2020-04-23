@@ -28,8 +28,9 @@ class Turtlebot(object):
 		self.wall_boundary = [-4.8,4.8]
 		self.w = w_env.Maze()
 		self.lidar = lidar.LIDAR()
-		self.goal_reached_threshold = 0.3
-		self.threshold = self.goal_reached_threshold+0.2
+		self.goal_reached_threshold = 1
+		# self.threshold = self.goal_reached_threshold+0.2
+		self.threshold = 0.5
 		self.discrete = args.discrete
 		self.action_steps = args.action_steps
 		# if args is not None:

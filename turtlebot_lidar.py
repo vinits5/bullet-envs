@@ -37,7 +37,7 @@ class LIDAR(object):
 
 	def __init__(self):
 		self.radius = 8
-		self.ray_angle = np.arange(0,2*np.pi,0.05)
+		self.ray_angle = np.arange(0,2*np.pi,0.1)
 
 	def ray_generator(self,ray_start,ray_end):
 		rayHitColor = [0,0,1]

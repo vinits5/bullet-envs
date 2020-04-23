@@ -2,3 +2,6 @@
 /turtlebot_env_test.py
 ppo/__pycache__
 ppo/log*
+ppo/train_baseline.py
+ppo/dqn_turtlebot.zip
+ppo/DQN_1
