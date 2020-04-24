@@ -132,6 +132,8 @@ def train(args):
 			entropy += dist.entropy().mean()
 
 			# Create Experiences
+			import pdb; pdb.set_trace()
+
 			log_probs.append(log_prob)
 			values.append(value)
 			rewards.append(torch.FloatTensor(reward).unsqueeze(1).to(device))

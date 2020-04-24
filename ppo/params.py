@@ -24,7 +24,8 @@ def params(argv=None):
 	parser.add_argument('--gamma', type=float, default=0.1, help='Weight applied to energy reward')
 
 	# turtlebot file parameters
-	parser.add_argument('--discrete', type=bool, default=True, help='Discrete or Continuous Environment.')
+	parser.add_argument('--discrete', type=bool, default=False
+		, help='Discrete or Continuous Environment.')
 	parser.add_argument('--action_steps', type=int, default=25, help='Number of time to repeat each action in turtlebot.py')
 	
 	parser.add_argument('--selfCollisionEnabled', type=bool, default=True, help='Collision between links')
