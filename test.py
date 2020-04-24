@@ -6,10 +6,11 @@ import pybullet as p
 class Args:
 	urdf_root = 'turtlebot_urdf/turtlebot.urdf'
 	mode = 'train'
-
+	discrete = False
+	action_steps = 100
 p.connect(p.GUI)
 args = Args()
-robot = Turtlebot(p, args.urdf_root)
+robot = Turtlebot(p, args.urdf_root,args)
 env = TurtlebotGymEnv(robot, args)
 env.reset()
 count = 0
@@ -33,4 +34,4 @@ while count<500:
 	count += 1
 
 
-10 rad/s 
+# 10 rad/s 

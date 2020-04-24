@@ -14,7 +14,7 @@ timeStep = 1/100.0
 
 class Turtlebot(object):
 	#The Turtlebot class simulates a turtlebot robot by Willow Garage.
-	def __init__(self, pybullet_client, urdf_root, args=None):
+	def __init__(self, pybullet_client, urdf_root, args):
 		self.numMotors = 2
 		self._pybulletClient = pybullet_client
 		self._urdf = urdf_root
@@ -85,7 +85,7 @@ class Turtlebot(object):
 	def getGoalPosition(self):
 
 		X = [random.uniform(self.wall_boundary[0],self.wall_boundary[1]),random.uniform(self.wall_boundary[0],self.wall_boundary[1])]
-
+		X = [3,1]
 		for centers in self.w.obstacle_centers:
 			if ((X[0]-(centers[0]))**2+ (X[1]-(centers[1]))**2) > (self.threshold)**2:
 				self.goal = X

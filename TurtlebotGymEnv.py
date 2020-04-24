@@ -30,7 +30,7 @@ class TurtlebotGymEnv(gym.Env):
 		if self.robot.step(action):
 			observation = self.robot.getObservation()
 			# print(observation[126:])
-			reward, done_reward = self.calculateReward(observation)
+			reward, done_reward = self.calculateReward(observation,action)
 			# reward = 0.0
 			done = self.checkTermination(observation)
 			# print(self.robot.goal,done_reward,done,reward)
@@ -84,12 +84,12 @@ class TurtlebotGymEnv(gym.Env):
 		action[idx_low[0]] = self.action_space.low[0]
 		return action
 
-	def calculateReward(self, observation):
+	def calculateReward(self, observation, action):
 		done = False
 		basePosition = self.robot.getBasePosition()
 		goalPosition = self.robot.goal
 		distance_reward = ((basePosition[0] - goalPosition[0])**2 + (basePosition[1] - goalPosition[1])**2)**0.5
-		
+		lidar_space = len(observation)-2
 		if distance_reward < self.robot.goal_reached_threshold:
 			goal_achieved_reward = 100
 			done = True
@@ -97,18 +97,30 @@ class TurtlebotGymEnv(gym.Env):
 			goal_achieved_reward = 0
 
 		distance_reward = distance_reward / ((goalPosition[0]**2 + goalPosition[1]**2)**0.5)
-		
-		step_reward = -0.1
-		if min(observation[0:126])<0.2:
-			collision_reward = -10.0
+
+		rotation_velocity = (action[1]-action[0])/2.0
+		forward_velocity = (action[1]+action[0])/2.0
+		rotation_reward = abs(rotation_velocity)*10
+		# forward_velocity_reward = forward_velocity*2.0
+		# rotation_reward = 0.0
+		forward_velocity_reward = 0.0
+
+		# print("rotation reward",forward_velocity_reward)
+
+		step_reward = -1
+		if min(observation[0:lidar_space])<0.2:
+			collision_reward = -100.0
 		else:
 			collision_reward = 0
-		return (-distance_reward + step_reward + collision_reward + goal_achieved_reward, done)
+		# print(distance_reward,step_reward,collision_reward,goal_achieved_reward, rotation_reward,forward_velocity_reward)
+		return (-distance_reward + step_reward + collision_reward + goal_achieved_reward- rotation_reward + forward_velocity_reward, done)
 		# return (step_reward + collision_reward + goal_achieved_reward, done)
 
 	def checkTermination(self, observation):
 		done = False
+		lidar_space = len(observation)-2
 		# print(min(observation[0:126]))
-		if min(observation[0:126])<0.2	:
+		if min(observation[0:lidar_space])<0.2	:
+			# print("collison detected",min(observation[0]))
 			done = True
 		return done

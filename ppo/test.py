@@ -69,7 +69,7 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	# Create network/policy.
 	net = ActorCritic(num_inputs, num_outputs, hidden_size, discrete=args.discrete).to(device)
 
-	checkpoint = torch.load(os.path.join(log_dir,'models/weights_10000.pth'), map_location='cpu')
+	checkpoint = torch.load(os.path.join(log_dir,'models/weights_21000.pth'), map_location='cpu')
 	net.load_state_dict(checkpoint['model'])
 
 	if create_video: frames = []
@@ -104,6 +104,6 @@ def running_test(log_dir, max_steps=100, create_video=False):
 	if create_video: log_video(frames)
 	return STATES
 
-state = running_test('log_23_04_2020_14_24_00')
+state = running_test('log_23_04_2020_19_21_01')
 # print(state)
 # print(type(state))
