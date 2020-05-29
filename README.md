@@ -13,4 +13,6 @@ This repository contains the gym env setup for **turtlebot** and a ppo implement
 
   * **/ppo**: PPO implementation for go to goal task
 
-![env](https://github.com/vinits5/bullet_envs/turtlebotRL/images/env1.png)
+![](images/env1.png)
+![](images/env2.png)
+![](images/lidar.png)
