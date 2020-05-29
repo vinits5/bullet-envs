@@ -1,13 +1,13 @@
 # turtlebotRL
 
-Following are the tasks for Environment:
-- [ ] Define random goal position (create_goal_position in turtlebot.py).
-- [ ] Complete check_termination function in TurtlebotGymEnv.py.
-- [ ] Need to define collision reward in TurtlebotGymEnv.py.
-- [ ] Complete add_obstacle function in turtlebot.py.
-- [ ] Complete get_observation function and update getObservationUpperBound, getObservationDimensions accordingly.
 
-Following are the tasks for PPO:
-- [ ] Update env in train.py.
-- [ ] Need to verify the shapes of all variables.
-- [ ] Test the code.
+## Contents
+This repository contains the gym env setup for **turtlebot** and a ppo implementation for go to goal task. The file are:
+
+  * **TurtlebotGymEnv**: The gym-env
+  * **turtlebot**: sets up the major funtions needed by the gym-env
+  * **turtlebot_lidar**: Generates LIDAR data using ray-casting
+  * **world_env**: Adds the obstacles and walls in the world frame
+  * **test**: Test script for this env
+
+  * **ppo**: PPO implementation for go to goal task
