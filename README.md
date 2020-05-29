@@ -1,5 +1,6 @@
 # turtlebotRL
 
+###Code Authors: Vinit Sarode & Abhimanyu
 
 ## Contents
 This repository contains the gym env setup for **turtlebot** and a ppo implementation for go to goal task. The file are:
@@ -10,4 +11,6 @@ This repository contains the gym env setup for **turtlebot** and a ppo implement
   * **world_env**: Adds the obstacles and walls in the world frame
   * **test**: Test script for this env
 
-  * **ppo**: PPO implementation for go to goal task
+  * **/ppo**: PPO implementation for go to goal task
+
+![env](https://github.com/vinits5/bullet_envs/blob/turtlebotRL/images/env1.png)

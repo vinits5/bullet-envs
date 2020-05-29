@@ -21,6 +21,6 @@ count = 0
 while count<5000:
 	#obs:LIDAR data[1,63], x, y
 	#action: [right_wheel_ang_vel,left_wheel_ang_vel]
-	obs, reward, _, _ = env.step([0, 1])
+	obs, reward, _, _ = env.step([0, 0])
 	print(len(obs))
 	count += 1
