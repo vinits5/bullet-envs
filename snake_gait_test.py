@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # log videos
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 # import cv2
 
 # def log_video(frames):
@@ -47,8 +47,8 @@ def test(max_steps, create_video=False, record_torque=True):
 	p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 	plane = p.loadURDF("plane.urdf")
-	robot = p.loadURDF("../snake/snake.urdf", [0, 0, 0], useFixedBase=0)
-	obstacle = p.loadURDF("../snake/block.urdf",basePosition =  [2, 0, 0.1], useFixedBase=0)
+	robot = p.loadURDF("./snake/snake.urdf", [0, 0, 0], useFixedBase=0)
+	obstacle = p.loadURDF("./snake/block.urdf",basePosition =  [2, 0, 0.1], useFixedBase=0)
 	p.setGravity(0, 0, -9.81)   # everything should fall down
 	p.setTimeStep(0.01)       # this slows everything down, but let's be accurate...
 	p.setRealTimeSimulation(0)  # we want to be faster than real time :)
