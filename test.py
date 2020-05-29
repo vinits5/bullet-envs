@@ -19,19 +19,8 @@ count = 0
 # l = 2*0.176
 
 while count<5000:
-	_, done, _, _ = env.step([1, 1])
-	# print(done)
+	#obs:LIDAR data[1,63], x, y
+	#action: [right_wheel_ang_vel,left_wheel_ang_vel]
+	obs, reward, _, _ = env.step([0, 1])
+	print(len(obs))
 	count += 1
-	# env.step([0.325, 0.275])
-	# x + y = 0.6
-	# x - y = 0.05
-	# 2x = 0.65
-	# x = 0.325
-	# y = 0.275
-
-while count<500:
-	env.step([1,1])
-	count += 1
-
-
-# 10 rad/s 
